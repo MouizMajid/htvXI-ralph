@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './i18n';
 import './index.css';
 import { KioskApp } from './kiosk/KioskApp';
-import { Queue } from './staff/Queue';
+import { Dashboard } from './staff/Dashboard';
 import { PatientView } from './staff/PatientView';
 
 const queryClient = new QueryClient();
@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/kiosk/*" element={<KioskApp />} />
-          <Route path="/staff" element={<Queue />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/staff/visit/:id" element={<PatientView />} />
           <Route path="*" element={<Navigate to="/kiosk" replace />} />
         </Routes>
