@@ -20,11 +20,15 @@ pnpm dev                  # api :3001 + web :5173
 
 Other scripts: `pnpm test`, `pnpm typecheck`, `pnpm build`.
 
-## Deploy (Vultr)
-```sh
-DOMAIN=your.domain docker compose up -d --build
-```
-Caddy gets TLS automatically and proxies `/api` + `/socket.io` to the API.
+## Deploy (Vercel)
+Two Vercel projects imported from this repo:
+
+| Project | Root Directory | Notes |
+|---|---|---|
+| `ralph-api` | `apps/api` | Fastify auto-detected. Add every variable from `.env.example` under Settings → Environment Variables. |
+| `ralph-web` | `apps/web` | Vite preset. `apps/web/vercel.json` proxies `/api/*` to `ralph-api` — update the URL there if your API project got a different name. |
+
+Push to `main` → production; any other branch → preview URL (HTTPS, so the mic works on phones). Run `pnpm db:migrate` from a laptop when adding migrations — prod and dev share the Tiger database.
 
 ## Layout
 `apps/web` (React kiosk + dashboard) · `apps/api` (Fastify) · `packages/shared` (types, Zod schemas, triage trees + rules). Docs for humans in `docs/`; context for Claude Code in `CLAUDE.md` and `.claude/skills/`.

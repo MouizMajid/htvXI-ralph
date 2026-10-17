@@ -5,7 +5,8 @@
  * Components use these semantic names (bg-primary, text-ink, rounded-card…),
  * never raw colours like bg-pink-500, so a restyle is a one-file change.
  */
-@theme {
+/* `static`: always emit every token, even ones only referenced from JS (e.g. var(--color-face-${n})). */
+@theme static {
   /* fonts */
   --font-sans: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
 
@@ -26,6 +27,19 @@
   --color-yes: #4caf7a;
   --color-no: #e0607e;
   --color-unsure: #b9aea4;
+
+  /* faces scale placeholders 0 (fine) … 5 (worst) — replaced by face-N.png art */
+  --color-face-0: #8fd19e;
+  --color-face-1: #b9de8a;
+  --color-face-2: #f2dc7d;
+  --color-face-3: #f5b971;
+  --color-face-4: #f08f6e;
+  --color-face-5: #e0607e;
+
+  /* body map placeholder */
+  --color-body: #f1e4d3;
+  --color-body-line: #c9b49b;
+  --color-body-selected: #e0607e;
 
   /* staff status (colour-blind-safe; always paired with a text label) */
   --color-success: #2e7d5b; /* stable */

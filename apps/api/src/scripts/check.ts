@@ -1,7 +1,7 @@
 // `pnpm check` — verifies Gemini + Tiger Data connections. Never prints secrets.
 import { GoogleGenAI } from '@google/genai';
 import postgres from 'postgres';
-import { env } from '../env';
+import { env } from '../env.js';
 
 let failed = false;
 const ok = (msg: string) => console.log(`  ✓ ${msg}`);

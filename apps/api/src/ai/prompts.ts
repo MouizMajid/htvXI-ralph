@@ -7,7 +7,7 @@ export const ralphPersona = (age: number, language: string) =>
   `Only react to the child's answer and stay on the current question. ` +
   `If the child says something suggesting someone is hurting them or they are unsafe, set safeguarding_concern=true.`;
 
-// TODO: interpretation, staff summary, briefing prompts.
+// TODO(slice 6): interpretation + English translation prompt.
 
 /**
  * Companion mode (waiting room). Unlike triage turns, Ralph may chat about the

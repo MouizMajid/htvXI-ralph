@@ -18,8 +18,7 @@
     "react-dom": "^18.3.1",
     "react-i18next": "^15.2.0",
     "react-router-dom": "^6.28.1",
-    "recharts": "^2.15.0",
-    "socket.io-client": "^4.8.1"
+    "recharts": "^2.15.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",

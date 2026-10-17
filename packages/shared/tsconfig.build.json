@@ -1,0 +1,13 @@
+{
+  // Emits plain JS to dist/ for Node on Vercel. Runs automatically on `pnpm install` (prepare).
+  // Local dev (tsx, Vite, Vitest) reads the .ts source via the "source" export condition instead.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "declaration": false,
+    "sourceMap": true
+  },
+  "include": ["**/*.ts", "triage/**/*.json"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

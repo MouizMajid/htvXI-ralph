@@ -1,5 +1,5 @@
-import type { Feeling } from './types';
-import { normalizeTranscript } from './triage/safeguarding';
+import type { Feeling } from './types.js';
+import { normalizeText } from './triage/text.js';
 
 /**
  * Companion chat helpers — deterministic, shared by API and kiosk.
@@ -53,11 +53,14 @@ export const RED_FLAG_PHRASES_EN: readonly { phrase: string; reason: string }[] 
   { phrase: 'seeing double', reason: 'Says seeing double' },
 ];
 
+/** Strip apostrophes before normalizing so "can't" -> "cant" matches "cant breathe". */
+const normPhrase = (s: string) => normalizeText(s.replace(/['’`]/g, ''));
+
 export function checkRedFlagPhrases(text: string): string[] {
-  const norm = ` ${normalizeTranscript(text)} `;
+  const norm = ` ${normPhrase(text)} `;
   const reasons = new Set<string>();
   for (const { phrase, reason } of RED_FLAG_PHRASES_EN) {
-    if (norm.includes(` ${normalizeTranscript(phrase)} `)) reasons.add(reason);
+    if (norm.includes(` ${normPhrase(phrase)} `)) reasons.add(reason);
   }
   return [...reasons];
 }
@@ -71,7 +74,7 @@ const SAME = ['same', 'okay', 'ok', 'meh', 'alright', 'so so', 'still'];
  * offline, and as a tie-breaker. Negation-aware for the common "not good" case.
  */
 export function detectFeeling(text: string): Exclude<Feeling, 'no_response'> | null {
-  const norm = ` ${normalizeTranscript(text)} `;
+  const norm = ` ${normPhrase(text)} `;
   const has = (words: string[]) => words.some((w) => norm.includes(` ${w} `));
   if (/\bnot (bad|too bad)\b/.test(norm)) return 'same';
   if (has(WORSE) || /\bnot (good|great|better|ok|okay|fine)\b/.test(norm)) return 'worse';
@@ -82,7 +85,7 @@ export function detectFeeling(text: string): Exclude<Feeling, 'no_response'> | n
 
 /** Child is signalling they're done talking. */
 export function wantsQuiet(text: string): boolean {
-  const norm = ` ${normalizeTranscript(text)} `;
+  const norm = ` ${normPhrase(text)} `;
   return [
     ' bye ',
     ' goodbye ',

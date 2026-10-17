@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkRedFlagPhrases, detectFeeling, fallbackReply, wantsQuiet } from './companion';
+import { checkRedFlagPhrases, detectFeeling, fallbackReply, wantsQuiet } from './companion.js';
 
 describe('detectFeeling', () => {
   it.each([

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defaultClientConditions, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -22,10 +22,11 @@ export default defineConfig({
       },
     }),
   ],
+  // Read @ralph/shared from its .ts source (see packages/shared/package.json "source" export).
+  resolve: { conditions: ['source', ...defaultClientConditions] },
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
-      '/socket.io': { target: 'http://localhost:3001', ws: true },
     },
   },
 });

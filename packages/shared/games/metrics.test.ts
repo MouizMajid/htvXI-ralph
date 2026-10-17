@@ -14,7 +14,7 @@ import {
   trailRatio,
   type PointerSample,
   type TapTarget,
-} from './metrics';
+} from './metrics.js';
 
 describe('stats', () => {
   it('median handles odd/even/empty', () => {
@@ -156,7 +156,7 @@ describe('motorObservations / isUnresponsive', () => {
 
 describe('analyzeSegmentedJitter', () => {
   it('ignores sharp turns at node hits on an otherwise smooth zig-zag', async () => {
-    const { analyzeSegmentedJitter } = await import('./metrics');
+    const { analyzeSegmentedJitter } = await import('./metrics.js');
     // Zig-zag: 4 straight 1.5 s legs at 120 Hz, direction flips at each node.
     const samples: PointerSample[] = [];
     const cuts: number[] = [];

@@ -1,4 +1,4 @@
-import type { Reason } from '../types';
+import type { Reason } from '../types.js';
 
 /**
  * Game metrics — pure, deterministic, unit-tested (games/metrics.test.ts).

@@ -1,7 +1,7 @@
 import { CompanionAiSchema, type CompanionAi, type CompanionTurnBody } from '@ralph/shared';
-import { env } from '../env';
-import { gemini } from './gemini';
-import { companionPersona } from './prompts';
+import { env } from '../env.js';
+import { gemini } from './gemini.js';
+import { companionPersona } from './prompts.js';
 
 const LANG_NAMES: Record<string, string> = {
   en: 'English',

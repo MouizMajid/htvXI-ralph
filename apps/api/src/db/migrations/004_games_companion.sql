@@ -1,14 +1,19 @@
 -- Firefly Tap + Cyber Circuit games, round summaries, companion check-in source.
+-- Runs after 003_conversation_alerts.sql (which dropped the old game_events table).
 
-ALTER TABLE game_events DROP CONSTRAINT IF EXISTS game_events_game_check;
-ALTER TABLE game_events ADD CONSTRAINT game_events_game_check
-  CHECK (game IN ('bubble_pop', 'firefly', 'ralph_says', 'firefly_tap', 'cyber_circuit'));
-
-ALTER TABLE game_events
-  ADD COLUMN IF NOT EXISTS hand TEXT,          -- 'dominant' | 'non_dominant'
-  ADD COLUMN IF NOT EXISTS phase TEXT,         -- cyber_circuit: warmup | offhand | bypass
-  ADD COLUMN IF NOT EXISTS accuracy_px REAL,   -- tap distance from target centre
-  ADD COLUMN IF NOT EXISTS label TEXT;         -- cyber_circuit node label ('7', 'C')
+CREATE TABLE IF NOT EXISTS game_events (
+  visit_id UUID NOT NULL REFERENCES visits(id) ON DELETE CASCADE,
+  at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  game TEXT NOT NULL CHECK (game IN ('bubble_pop', 'firefly', 'ralph_says', 'firefly_tap', 'cyber_circuit')),
+  round INT NOT NULL,
+  reaction_ms INT,
+  hit BOOLEAN,
+  hand TEXT,
+  phase TEXT,
+  accuracy_px REAL,
+  label TEXT
+);
+CREATE INDEX IF NOT EXISTS game_events_visit_idx ON game_events (visit_id, at DESC);
 
 -- One row per finished game round: summary numbers + nurse-facing notes + score reasons.
 CREATE TABLE IF NOT EXISTS game_rounds (

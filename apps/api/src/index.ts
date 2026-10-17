@@ -1,24 +1,14 @@
+// Entry point. Vercel auto-detects Fastify from this file — it must import `fastify` itself and
+// call listen(). Routes are registered in build-app.ts (not app.ts: Vercel would treat that as the entry).
 import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import multipart from '@fastify/multipart';
-import { env } from './env';
-import { attachRealtime } from './realtime';
-import { healthRoutes } from './routes/health';
-import { demoRoutes } from './routes/demo';
-import { companionRoutes } from './routes/companion';
-import { gameRoutes } from './routes/games';
+import { configureApp } from './build-app.js';
+import { env } from './env.js';
 
-const app = Fastify({ logger: true });
+const app = await configureApp(Fastify({ logger: true }));
 
-await app.register(cors, { origin: true });
-await app.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } }); // ≤15 s clips
-
-await app.register(healthRoutes, { prefix: '/api' });
-await app.register(companionRoutes, { prefix: '/api' });
-await app.register(gameRoutes, { prefix: '/api' });
-if (env.DEMO_MODE) await app.register(demoRoutes, { prefix: '/api/demo' });
-// TODO(Tier 1): visits, turns, staff, tts routes
-
-attachRealtime(app.server);
-
-await app.listen({ port: env.PORT, host: '0.0.0.0' });
+// Don't `await` this: on Vercel, listen() is intercepted and a top-level await on it
+// keeps the module from ever finishing loading (every request hangs).
+app.listen({ port: env.PORT, host: '0.0.0.0' }).catch((err: unknown) => {
+  app.log.error(err);
+  process.exit(1);
+});

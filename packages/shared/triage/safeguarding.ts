@@ -1,42 +1,76 @@
-import type { Lang } from '../types';
+import type { Alert, Lang } from '../types.js';
+import { findPhrase } from './text.js';
+import en from './i18n/safeguarding/en.json' with { type: 'json' };
+import hi from './i18n/safeguarding/hi.json' with { type: 'json' };
+import es from './i18n/safeguarding/es.json' with { type: 'json' };
+import fr from './i18n/safeguarding/fr.json' with { type: 'json' };
+import zhCN from './i18n/safeguarding/zh-CN.json' with { type: 'json' };
+import replyEn from './i18n/en.json' with { type: 'json' };
+import replyHi from './i18n/hi.json' with { type: 'json' };
+import replyEs from './i18n/es.json' with { type: 'json' };
+import replyFr from './i18n/fr.json' with { type: 'json' };
+import replyZh from './i18n/zh-CN.json' with { type: 'json' };
 
-/**
- * Deterministic safeguarding phrase check — one of two signals (the other is the
- * LLM's `safeguarding_concern`). Flag if EITHER fires. See triage-engine skill.
+/** The ONLY thing Ralph says after a disclosure — fixed and pre-translated, never LLM-written. */
+export const SAFEGUARDING_REPLY: Record<Lang, string> = {
+  en: replyEn.safeguarding_reply,
+  hi: replyHi.safeguarding_reply,
+  es: replyEs.safeguarding_reply,
+  fr: replyFr.safeguarding_reply,
+  'zh-CN': replyZh.safeguarding_reply,
+};
+
+/*
+ * Safeguarding = two independent signals; flag if EITHER fires (never AND):
+ *   1. deterministic phrase lists (this file), 2. the LLM's `safeguarding_concern`.
+ * False positives are acceptable; false negatives are not. See triage-engine skill.
  *
- * TODO(Tier 1 #5): load curated per-language lists from
- * i18n/safeguarding/{lang}.json and add Vitest cases (positive + benign per language).
+ * Lists avoid bare "hurts me" etc. — in a symptom conversation ("my tummy hurts me")
+ * that would fire constantly and train staff to ignore the flag.
  */
+export const SAFEGUARDING_PHRASES: Record<Lang, string[]> = {
+  en: en.phrases,
+  hi: hi.phrases,
+  es: es.phrases,
+  fr: fr.phrases,
+  'zh-CN': zhCN.phrases,
+};
 
-export interface SafeguardingMatch {
+export interface SafeguardingInput {
+  /** What the child said, in the session language. */
+  transcript: string;
+  lang: Lang;
+  /** English translation (also checked against the English list — covers code-switching). */
+  text_en?: string;
+  /** From the per-turn interpretation call; undefined if that call failed. */
+  llm_concern?: boolean;
+}
+
+export interface SafeguardingResult {
   fired: boolean;
+  signals: ('phrase' | 'llm')[];
   phrase: string | null;
 }
 
-export function normalizeTranscript(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFKC')
-    .replace(/[\p{P}\p{S}]+/gu, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+export function detectSafeguarding({ transcript, lang, text_en, llm_concern }: SafeguardingInput): SafeguardingResult {
+  const phrase =
+    findPhrase(transcript, SAFEGUARDING_PHRASES[lang], lang) ??
+    (lang !== 'en' ? findPhrase(transcript, SAFEGUARDING_PHRASES.en, 'en') : null) ??
+    (text_en ? findPhrase(text_en, SAFEGUARDING_PHRASES.en, 'en') : null);
+
+  const signals: SafeguardingResult['signals'] = [];
+  if (phrase) signals.push('phrase');
+  if (llm_concern) signals.push('llm');
+  return { fired: signals.length > 0, signals, phrase };
 }
 
-export function checkSafeguarding(
-  transcript: string,
-  phrases: readonly string[],
-  lang: Lang,
-): SafeguardingMatch {
-  const text = normalizeTranscript(transcript);
-  for (const raw of phrases) {
-    const phrase = normalizeTranscript(raw);
-    if (!phrase) continue;
-    // zh-CN has no word spaces: plain substring. Others: match on word boundaries.
-    const hit =
-      lang === 'zh-CN'
-        ? text.includes(phrase)
-        : ` ${text} `.includes(` ${phrase} `);
-    if (hit) return { fired: true, phrase: raw };
-  }
-  return { fired: false, phrase: null };
+/** Staff-only alert. Never sent to the kiosk or parent view. */
+export function safeguardingAlert(result: SafeguardingResult): Alert | null {
+  if (!result.fired) return null;
+  const how = result.phrase ? `phrase "${result.phrase}"` : 'AI flagged the wording';
+  return {
+    kind: 'safeguarding',
+    key: `safeguarding:${result.phrase ?? 'llm'}`,
+    reason: `Possible safeguarding concern — ${how}. Talk with the child privately.`,
+  };
 }

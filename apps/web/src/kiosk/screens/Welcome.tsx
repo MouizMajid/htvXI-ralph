@@ -2,7 +2,13 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Ralph } from '../components/Ralph';
 
-export function Welcome({ onStart }: { onStart: () => void }) {
+export function Welcome({
+  onStart,
+  onSkipToWaiting,
+}: {
+  onStart: () => void;
+  onSkipToWaiting?: () => void;
+}) {
   const { t } = useTranslation();
   return (
     <section className="relative mx-auto flex min-h-full max-w-2xl flex-col items-center justify-center gap-7 overflow-hidden p-6 text-center">
@@ -44,14 +50,26 @@ export function Welcome({ onStart }: { onStart: () => void }) {
         </h1>
       </motion.div>
 
-      <motion.button
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onStart}
-        className="min-h-18 rounded-pill bg-primary px-14 text-2xl font-extrabold text-on-primary shadow-soft"
-      >
-        {t('welcome.start')} ✨
-      </motion.button>
+      <div className="flex flex-col items-center gap-3">
+        <motion.button
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onStart}
+          className="min-h-18 rounded-pill bg-primary px-14 text-2xl font-extrabold text-on-primary shadow-soft"
+        >
+          {t('welcome.start')} ✨
+        </motion.button>
+
+        {onSkipToWaiting && (
+          <button
+            type="button"
+            onClick={onSkipToWaiting}
+            className="rounded-pill bg-surface px-6 py-2 text-sm font-extrabold text-ink-muted shadow-soft hover:text-ink"
+          >
+            🎮 Jump straight to Waiting Room Games & Companion
+          </button>
+        )}
+      </div>
     </section>
   );
 }
