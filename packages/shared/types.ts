@@ -73,32 +73,3 @@ export type ReplyKey = 'thanks' | 'safeguarding_reply';
 
 /** Children under this age use parent mode (parent answers, no games). */
 export const PARENT_MODE_MAX_AGE = 4;
-
-// ---------- Nurse Shift & AI Matchmaker Types ----------
-
-export type NurseStatus = 'ready' | 'away';
-
-export interface Nurse {
-  id: string;
-  name: string;
-  title: string;
-  avatar: string;
-  status: NurseStatus;
-  specialty: string;
-}
-
-export interface AssignedNurseInfo {
-  id: string;
-  name: string;
-  title: string;
-  avatar: string;
-}
-
-export interface NurseWorkload {
-  nurse: Nurse;
-  inRoomCount: number;
-  waitingCount: number;
-  totalWorkloadMinutes: number;
-  activePatientComplexity: 'critical' | 'urgent' | 'standard' | 'none';
-  breakdown: string;
-}

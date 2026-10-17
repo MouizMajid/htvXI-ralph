@@ -8,7 +8,7 @@ import { WaitingHub } from './WaitingHub';
 /**
  * Waits to be called in (polls visit status) while giving the child access to
  * the WaitingHub (Firefly Tap, Cyber Circuit: Firewall Hacker, Companion chat,
- * 12-minute automatic check-in with Mute button, and live Nurse / Wait Time card).
+ * and the 12-minute automatic check-in with Mute button).
  */
 export function Waiting({
   visitId,
@@ -40,9 +40,6 @@ export function Waiting({
       initialName={childName || 'Maya'}
       initialAge={ageYears}
       language={lang}
-      initialAssignedNurse={data?.assigned_nurse}
-      initialWaitMinutes={data?.estimated_wait_minutes}
-      initialQueuePosition={data?.queue_position}
     />
   );
 }
