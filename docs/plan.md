@@ -11,8 +11,8 @@ One **slice** at a time. Each slice is one cohesive portion that touches only th
 |---|---|---|---|---|
 | 0 | **Baseline + deploy smoke test** | git, Vercel projects | Committed + pushed; Vercel `ralph-api` `/api/health` returns `db: ok` through `ralph-web` | ✅ |
 | 1 | **Conversation + alert core** | `packages/shared` | Full tummy tree; red-flag, getting-worse, not-responding rules; safeguarding phrase check. Vitest: Maya's path, each rule, safeguarding positive + benign | ✅ |
-| 2 | **Visit API + seed** | `apps/api` routes + db, migration `003` cleanup | Create visit, complaint, tap turn, parent answers, check-ins, staff reads, call-in — tested with Fastify `inject` against Tiger; seed creates 6 synthetic background kids (Maya checks in live) | 🟡 PR open |
-| 3 | **Kiosk tap flow** | `apps/web/src/kiosk` (not games) | Welcome → language → who's here → complaint → tree (yes/no, choice, body map, faces) → parent confirm → waiting → goodbye on call-in. Reducer unit tests + browser click-through + phone check | ⬜ |
+| 2 | **Visit API + seed** | `apps/api` routes + db, migration `003` cleanup | Create visit, complaint, tap turn, parent answers, check-ins, staff reads, call-in — tested with Fastify `inject` against Tiger; seed creates 6 synthetic background kids (Maya checks in live) | ✅ |
+| 3 | **Kiosk tap flow** | `apps/web/src/kiosk` (not games) | Welcome → language → who's here → complaint → tree (yes/no, choice, body map, faces) → parent confirm → waiting → goodbye on call-in. Reducer unit tests + browser click-through + phone check | 🟡 PR open (needs a real-phone check) |
 | 4 | **Staff dashboard** | `apps/web/src/staff` | Queue (alerts first, then arrival) + patient view (alerts, answers table, conversation, check-ins, call-in), polling 2.5 s. Phone check-in appears on laptop within 3 s | ⬜ |
 | | **Milestone A — tap-only demo works end to end; deploy** | | | |
 | 5 | **Ralph speaks** | TTS route, pre-gen script, audio player, `<Ralph pose="talk">` sync | Fixed lines play instantly from cache; dynamic lines cached in Tiger; no key → browser voice fallback | ⬜ |

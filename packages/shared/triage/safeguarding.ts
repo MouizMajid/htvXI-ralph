@@ -5,6 +5,20 @@ import hi from './i18n/safeguarding/hi.json' with { type: 'json' };
 import es from './i18n/safeguarding/es.json' with { type: 'json' };
 import fr from './i18n/safeguarding/fr.json' with { type: 'json' };
 import zhCN from './i18n/safeguarding/zh-CN.json' with { type: 'json' };
+import replyEn from './i18n/en.json' with { type: 'json' };
+import replyHi from './i18n/hi.json' with { type: 'json' };
+import replyEs from './i18n/es.json' with { type: 'json' };
+import replyFr from './i18n/fr.json' with { type: 'json' };
+import replyZh from './i18n/zh-CN.json' with { type: 'json' };
+
+/** The ONLY thing Ralph says after a disclosure — fixed and pre-translated, never LLM-written. */
+export const SAFEGUARDING_REPLY: Record<Lang, string> = {
+  en: replyEn.safeguarding_reply,
+  hi: replyHi.safeguarding_reply,
+  es: replyEs.safeguarding_reply,
+  fr: replyFr.safeguarding_reply,
+  'zh-CN': replyZh.safeguarding_reply,
+};
 
 /*
  * Safeguarding = two independent signals; flag if EITHER fires (never AND):

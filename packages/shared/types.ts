@@ -49,5 +49,20 @@ export interface Alert {
   reason: string;
 }
 
+/** What the kiosk needs to render one question (API → kiosk). Never includes alerts. */
+export interface NodeView {
+  /** Tree id — with `id`, the key for the translated question text. */
+  tree: string;
+  id: string;
+  /** English source text (fallback when no translation exists). */
+  ask: string;
+  answer_type: AnswerType;
+  options?: string[];
+  max?: number;
+}
+
+/** Which fixed line Ralph says after an answer; the kiosk maps it to translated text + audio. */
+export type ReplyKey = 'thanks' | 'safeguarding_reply';
+
 /** Children under this age use parent mode (parent answers, no games). */
 export const PARENT_MODE_MAX_AGE = 4;
