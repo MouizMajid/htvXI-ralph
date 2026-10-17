@@ -5,6 +5,21 @@ description: RALPH Fastify API endpoints, dashboard polling, Gemini usage (Ralph
 
 # API + AI
 
+## Code map (`apps/api/src`)
+`index.ts` (entry; creates Fastify, calls `configureApp`, `listen`) · `build-app.ts` (`configureApp`, `buildApp` for tests) · `http.ts` (`HttpError`, Zod → 400 handler) · `routes/visits.ts` (kiosk) · `routes/staff.ts` · `triage/engine.ts` (answer → slot → next node → re-run alerts; the only place that combines shared logic with the DB) · `db/visits.ts` (**all SQL**) · `db/seed.ts` + `seed-data.ts` · `routes/api.test.ts` (integration tests via `app.inject` against Tiger; clean up after themselves).
+
+**Implemented contract (slice 2):**
+- `POST /visits` `{first_name, age_years, weight_kg?, language}` → `201 {visit_id, parent_mode}`
+- `POST /visits/:id/complaint` `{complaint}` → `{node}` where `node = {id, ask, answer_type, options?, max?}` (English `ask`; kiosk translates by node id)
+- `POST /visits/:id/turns/tap` `{node_id, value?, skip?}` → `{next: node | null, reply: 'thanks' | 'safeguarding_reply'}`. `409` if `node_id` isn't the current question, `400` if the value doesn't fit. A string on a `free_speech` node is recorded as the child's own words (`input: 'text'`).
+- `POST /visits/:id/parent` `{answers: ParentAnswers, edits?: [{node_id, value}]}` → `{ok}`
+- `POST /visits/:id/checkins` `{feeling, pain_face?}` → `{ok}` (`409` once called in)
+- `GET /visits/:id/status` → `{status, current_node, next_checkin_at}` (null until parent confirms / after call-in)
+- `GET /staff/queue` → `{visits: [{id, first_name, age_years, language, arrived_at, status, parent_mode, chief_complaint, complaint_words_en, open_alerts, alerts: [{id, kind, reason, acknowledged}]}]}`
+- `GET /staff/visits/:id` → `{visit, turns, checkins, alerts}`
+- `POST /staff/visits/:id/actions` `{action: 'call_in' | 'done'}` or `{action: 'acknowledge_flag', flag_id}`
+- Timestamps default to the **DB clock** (`now()`); pass `at` only for seeding/demo time travel.
+
 ## Endpoints (Fastify, JSON unless noted)
 | Method | Path | Purpose |
 |---|---|---|
@@ -45,7 +60,7 @@ The staff side uses **no AI**. Gemini is used for exactly three things:
 - Two Vercel projects from the same GitHub repo:
   - **`ralph-api`** — Root Directory `apps/api`. Framework auto-detected as Fastify from `src/index.ts` (which calls `listen`). All env vars from `.env.example` (except `PORT`) go in its Environment Variables.
   - **`ralph-web`** — Root Directory `apps/web`, Vite preset. `apps/web/vercel.json` rewrites `/api/:path*` to the API project's production URL, then falls back to `/index.html`. **If the API project's URL isn't `ralph-api.vercel.app`, update that rewrite.**
-- **Gotchas that broke the first deploy (don't reintroduce):** (1) relative imports need `.js` extensions; (2) `@ralph/shared` must resolve to compiled `dist/` (built by its `prepare` script); (3) **never `await app.listen()`** at top level — Vercel intercepts `listen`, and awaiting it hangs every request.
+- **Gotchas that broke the first deploy (don't reintroduce):** (1) relative imports need `.js` extensions; (2) `@ralph/shared` must resolve to compiled `dist/` (built by its `prepare` script); (3) **never `await app.listen()`** at top level — Vercel intercepts `listen`, and awaiting it hangs every request; (4) **only `src/index.ts` may use an entry-point name** — Vercel picks the first of `src/app.*`, `src/index.*`, `src/server.*` as the entry, so the app builder is `src/build-app.ts`; (5) **`src/index.ts` must `import Fastify from 'fastify'` itself** (Vercel's detection requires it) — it creates the instance and passes it to `configureApp()`.
 - Debugging: `npx vercel deploy` (from repo root, linked to `ralph-api`) makes a preview from local files without committing; `npx vercel logs --deployment <url>` shows runtime errors (requests that hang only log after the function times out).
 - Serverless rules: no in-memory state or `setInterval` between requests (check-in timing is driven by the kiosk client + `CHECKIN_INTERVAL_SEC`); no writing files (use Postgres); DB pool `max: 3`; body ≤ 4.5 MB.
 - Every push to a branch gets a preview URL; `main` → production.
