@@ -1,1 +1,69 @@
-{ "welcome": { "greeting": "Hi! I'm Ralph. Can you help me learn how you're feeling?", "start": "Let's go!" }, "oops": "Oops, let's try tapping!" }
+{
+  "welcome": { "greeting": "Hi! I'm Ralph. Can you help me learn how you're feeling?", "start": "Let's go!" },
+  "oops": "Oops, let's try tapping!",
+  "language": { "title": "Which language?", "hint": "Grown-ups: pick the language your child speaks best." },
+  "who": {
+    "title": "Hi grown-up! Who's here today?",
+    "name": "Child's first name",
+    "age": "Age (years)",
+    "weight": "Weight in kg (optional)",
+    "next": "Next",
+    "parentModeNote": "Under 4? You'll answer for them, and Ralph will help."
+  },
+  "complaint": {
+    "ask": "What's bothering you today?",
+    "tummy": "My tummy",
+    "fever": "Hot or sick",
+    "breathing": "Hard to breathe or coughing",
+    "other": "Something else"
+  },
+  "parentMode": "Grown-up, please answer for {{name}}.",
+  "answers": { "yes": "Yes", "no": "No", "not_sure": "Not sure" },
+  "options": {
+    "today": "Today",
+    "before today": "Before today",
+    "not sure": "Not sure",
+    "normal": "Normal",
+    "runny": "Runny",
+    "not gone": "Haven't gone"
+  },
+  "faces": { "0": "Fine", "1": "A tiny bit", "2": "A bit", "3": "Quite a lot", "4": "A lot", "5": "The worst" },
+  "number": { "orMore": "{{n}} or more" },
+  "bodyMap": { "front": "Front", "back": "Back", "allOver": "All over", "hint": "Tap where it hurts", "confirm": "That's the spot!" },
+  "regions": {
+    "head": "Head",
+    "throat": "Throat",
+    "chest": "Chest",
+    "upper_tummy": "Upper tummy",
+    "belly_button": "Around belly button",
+    "lower_left_tummy": "Lower-left tummy",
+    "lower_middle_tummy": "Lower-middle tummy",
+    "lower_right_tummy": "Lower-right tummy",
+    "back": "Back",
+    "arms": "Arms",
+    "legs": "Legs",
+    "all_over": "All over"
+  },
+  "freeText": { "placeholder": "A grown-up can type what they say…", "next": "Next", "skip": "Skip" },
+  "ralph": { "thanks": "Thank you!" },
+  "parent": {
+    "title": "Grown-up: please check what {{name}} told Ralph",
+    "change": "Change",
+    "skipped": "Skipped",
+    "edited": "changed",
+    "more": "A few questions for you",
+    "onset": "When did it start?",
+    "onsetOptions": { "today": "Today", "1_2_days": "1–2 days ago", "more_than_2_days": "More than 2 days ago", "not_sure": "Not sure" },
+    "maxTemp": "Highest temperature (°C), if you measured it",
+    "meds": "Any medicine given? What and when?",
+    "fluids": "Keeping drinks down?",
+    "peed": "Peed in the last 8 hours?",
+    "sleepy": "Unusually sleepy or hard to wake?",
+    "rash": "Any rash?",
+    "conditions": "Health conditions or allergies?",
+    "notes": "Anything else the nurse should know?",
+    "submit": "Send to the nurse"
+  },
+  "waiting": { "title": "Thanks, {{name}}! A nurse will call you soon.", "games": "Games are coming soon!" },
+  "goodbye": { "title": "Bye, {{name}}! The nurse is ready for you.", "sticker": "Here's a sticker for being so brave!", "done": "Done" }
+}

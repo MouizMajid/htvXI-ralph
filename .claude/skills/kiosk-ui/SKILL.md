@@ -5,6 +5,15 @@ description: RALPH frontend — child/parent kiosk flow, the waiting-room games 
 
 # Kiosk + dashboard UI
 
+## Kiosk code map (`apps/web/src/kiosk`, built in slice 3)
+- `session.ts` — the pure flow reducer (`Step`, `Action`, `initialSession`); tested in `session.test.ts`. Add new steps here first.
+- `KioskApp.tsx` — the **only** place that calls the API (`kioskApi` in `lib/api.ts`); dispatches results; fail-soft via `REQUEST`/`FAILED`; saves `{visitId, lang, childName, parentMode}` to sessionStorage once waiting so a refresh resumes.
+- `screens/` — Welcome, Language, WhoIsHere, Complaint, Question (shows Ralph's reaction: "Thank you!" 0.9 s, or the fixed `SAFEGUARDING_REPLY[lang]` 4.5 s), ParentConfirm (edits + parent-only answers), Waiting (polls `/status`), Goodbye.
+- `components/` — `Shell` (Ralph + speech bubble + one action area), `BigButton`, `Icon` (PNG from `public/icons/` else emoji placeholder), `AnswerInput` (switch over `answer_type`), `BodyMap`, `FacesScale`.
+- `format.ts` — `questionText()` (`t('q.<tree>.<node>')`, English `ask` fallback) and `answerText()`.
+- Body map: front view faces the viewer, so **child's right = viewer's left** (`lower_right_tummy` is drawn on the left). Hotspots sit over `icons/body-front.png` / `body-back.png` (300×560 canvas) when present.
+- i18n: all strings in `src/i18n/en.json`; other languages fall back to English until translated.
+
 ## Child flow (`apps/web/src/kiosk`)
 1. **Welcome:** Ralph waves. "Hi! I'm Ralph. Can you help me learn how you're feeling?" Big "Let's go!" button.
 2. **Language (parent):** names in their own script, no flags: English, हिन्दी, Español, Français, 中文. Default English.

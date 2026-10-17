@@ -10,30 +10,19 @@ import {
   safeguardingAlert,
   treeForComplaint,
   type Complaint,
+  type NodeView,
   type ParentAnswers,
+  type ReplyKey,
   type SlotValue,
   type Tree,
-  type TreeNode,
 } from '@ralph/shared';
 import * as db from '../db/visits.js';
 import { HttpError, notFound } from '../http.js';
 
-/** What the kiosk needs to render a question. Never includes alerts. */
-export interface NodeView {
-  id: string;
-  ask: string;
-  answer_type: TreeNode['answer_type'];
-  options?: string[];
-  max?: number;
-}
-
-/** Which fixed line Ralph says after an answer (kiosk maps keys → translated text + cached audio). */
-export type ReplyKey = 'thanks' | 'safeguarding_reply';
-
 export function nodeView(tree: Tree, id: string | null): NodeView | null {
   if (!id) return null;
   const n = getNode(tree, id);
-  return { id, ask: n.ask, answer_type: n.answer_type, options: n.options, max: n.max };
+  return { tree: tree.id, id, ask: n.ask, answer_type: n.answer_type, options: n.options, max: n.max };
 }
 
 export async function loadVisit(id: string): Promise<db.VisitRow> {
