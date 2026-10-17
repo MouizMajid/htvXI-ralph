@@ -1,0 +1,22 @@
+{
+  "name": "ralph",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @ralph/api --filter @ralph/web dev",
+    "dev:api": "pnpm --filter @ralph/api dev",
+    "dev:web": "pnpm --filter @ralph/web dev",
+    "build": "pnpm --filter @ralph/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "db:migrate": "pnpm --filter @ralph/api db:migrate",
+    "db:seed": "pnpm --filter @ralph/api db:seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
+  --color-cream: #fdf8f0;
+  --color-ink: #2b2420;
+  --color-berry: #e0607e;
+  --color-leaf: #4caf7a;
+  --color-sky: #4a90d9;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
