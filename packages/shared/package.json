@@ -8,6 +8,11 @@
       "types": "./index.ts",
       "source": "./index.ts",
       "default": "./dist/index.js"
+    },
+    "./fixtures": {
+      "types": "./triage/fixtures/maya.ts",
+      "source": "./triage/fixtures/maya.ts",
+      "default": "./dist/triage/fixtures/maya.js"
     }
   },
   "scripts": {
