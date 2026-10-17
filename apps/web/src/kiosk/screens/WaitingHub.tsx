@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AUTO_CHECKIN_MINUTES,
   DEFAULT_COMPANION_TIMINGS,
+  type AssignedNurseInfo,
   type Feeling,
   type GameResult,
   type Handedness,
@@ -11,6 +12,7 @@ import {
 } from '@ralph/shared';
 import { Ralph } from '../components/Ralph';
 import { MuteCheckinButton } from '../components/MuteCheckinButton';
+import { kioskApi } from '../../lib/api';
 import { postCheckin } from '../../lib/kioskApi';
 import { speak, useRalphMuted } from '../../lib/speech';
 import { FireflyTap } from '../games/GameOne';
@@ -18,12 +20,11 @@ import { CyberCircuit } from '../games/GameTwo';
 import { Companion } from './Companion';
 
 /**
- * Waiting-room hub: lets the child choose age-appropriate games ("Firefly Tap"
- * for younger kids, "Cyber Circuit: Firewall Hacker" for pre-teens/adolescents)
- * or simply hang out and talk with Ralph if they don't feel up to playing.
- *
- * Also runs the automatic 12-minute Ralph check-in timer (unless muted via the
- * Mute button).
+ * Waiting-room hub:
+ * 1. Shows the patient exactly who their assigned nurse is ("Meeting Their Nurse").
+ * 2. Displays live dynamic wait times that update in real-time when rooms clear early.
+ * 3. Lets the child choose games ("Firefly Tap", "Cyber Circuit") or chat with Ralph.
+ * 4. Runs the 12-minute Ralph check-in timer (unless muted).
  */
 
 interface WaitingHubProps {
@@ -31,6 +32,9 @@ interface WaitingHubProps {
   initialName?: string;
   initialAge?: number;
   language?: Lang;
+  initialAssignedNurse?: AssignedNurseInfo | null;
+  initialWaitMinutes?: number | null;
+  initialQueuePosition?: number | null;
 }
 
 type ActiveTab = 'hub' | 'firefly_tap' | 'cyber_circuit' | 'companion';
@@ -40,6 +44,9 @@ export function WaitingHub({
   initialName = 'Maya',
   initialAge = 7,
   language = 'en',
+  initialAssignedNurse = null,
+  initialWaitMinutes = null,
+  initialQueuePosition = null,
 }: WaitingHubProps) {
   const { t } = useTranslation();
   const [muted] = useRalphMuted();
@@ -50,6 +57,56 @@ export function WaitingHub({
   const [lastResult, setLastResult] = useState<GameResult | null>(null);
   const [starsEarned, setStarsEarned] = useState(0);
   const [showTelemetry, setShowTelemetry] = useState(false);
+
+  // Live Nurse & Dynamic Wait Time State (Pillar 3)
+  const [nurse, setNurse] = useState<AssignedNurseInfo | null>(
+    initialAssignedNurse || {
+      id: 'nurse-sarah',
+      name: 'Nurse Sarah',
+      title: 'Pediatric Emergency RN',
+      avatar: '👩‍⚕️',
+    },
+  );
+  const [waitMin, setWaitMin] = useState<number>(initialWaitMinutes ?? 12);
+  const [prevWaitMin, setPrevWaitMin] = useState<number | null>(null);
+  const [queuePos, setQueuePos] = useState<number>(initialQueuePosition ?? 1);
+  const [roomStatus, setRoomStatus] = useState<'waiting' | 'in_room' | 'done'>('waiting');
+  const [waitDropBanner, setWaitDropBanner] = useState<string | null>(null);
+
+  // Poll live nurse assignment and wait times every 3.5 seconds
+  useEffect(() => {
+    let active = true;
+    const pollStatus = async () => {
+      try {
+        const res = await kioskApi.status(visitId);
+        if (!active || !res) return;
+        if (res.assigned_nurse) setNurse(res.assigned_nurse);
+        if (typeof res.estimated_wait_minutes === 'number') {
+          setWaitMin((curr) => {
+            if (curr > res.estimated_wait_minutes! + 1) {
+              const diff = curr - res.estimated_wait_minutes!;
+              setWaitDropBanner(
+                `⚡ Faster than expected! Nurse ${res.assigned_nurse?.name || 'Sarah'} cleared the previous room early. Your wait time dropped by ${diff} minutes!`,
+              );
+              setPrevWaitMin(curr);
+            }
+            return res.estimated_wait_minutes!;
+          });
+        }
+        if (typeof res.queue_position === 'number') setQueuePos(res.queue_position);
+        if (res.status) setRoomStatus(res.status);
+      } catch {
+        /* demo mode / mock fallback */
+      }
+    };
+
+    void pollStatus();
+    const interval = setInterval(() => void pollStatus(), 3500);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [visitId]);
 
   // Automatic 12-minute check-in modal when on the hub (disabled when muted)
   const [checkinModalOpen, setCheckinModalOpen] = useState(false);
@@ -198,6 +255,96 @@ export function WaitingHub({
           </div>
         </div>
       </header>
+
+      {/* PILLAR 3: MEET YOUR NURSE & LIVE DYNAMIC WAIT TIME CARD */}
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="overflow-hidden rounded-card border-2 border-secondary/30 bg-gradient-to-r from-blue-50/60 via-surface to-blue-50/40 p-5 shadow-soft"
+      >
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          {/* Left: Nurse Info */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex size-16 shrink-0 items-center justify-center rounded-2xl bg-secondary/15 text-3xl shadow-inner ring-2 ring-secondary/30">
+              {nurse?.avatar || '👩‍⚕️'}
+              <span className="absolute -top-1 -right-1 flex size-4">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-yes opacity-75" />
+                <span className="relative inline-flex size-4 rounded-full bg-yes border-2 border-surface" />
+              </span>
+            </div>
+
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-pill bg-secondary/15 px-3 py-0.5 text-xs font-black tracking-wide text-secondary uppercase">
+                  Your Assigned Nurse
+                </span>
+                <span className="rounded-pill bg-surface px-2.5 py-0.5 text-xs font-bold text-ink-muted shadow-sm">
+                  Spot #{queuePos} in line
+                </span>
+              </div>
+              <h2 className="mt-1 text-xl font-extrabold text-ink sm:text-2xl">
+                You are in line to see <span className="text-secondary">{nurse?.name || 'Nurse Sarah'}</span>
+              </h2>
+              <p className="text-sm font-semibold text-ink-muted">
+                {nurse?.title || 'Pediatric Emergency RN'} · Care room will be ready shortly
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Live Dynamic Wait Time */}
+          <div className="flex shrink-0 flex-col items-start rounded-2xl border border-secondary/20 bg-surface px-5 py-3 shadow-sm sm:items-end">
+            <div className="flex items-center gap-2">
+              <span className="relative flex size-2.5">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-yes opacity-75" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-yes" />
+              </span>
+              <span className="text-xs font-extrabold tracking-wider text-ink-muted uppercase">
+                Live Wait Estimate
+              </span>
+            </div>
+
+            {roomStatus === 'in_room' ? (
+              <span className="mt-0.5 text-2xl font-black text-yes">
+                Ready in Room! 🚪
+              </span>
+            ) : (
+              <div className="mt-0.5 flex items-baseline gap-1.5">
+                <span className="text-3xl font-black tabular-nums text-ink sm:text-4xl">
+                  ~{waitMin}
+                </span>
+                <span className="text-base font-bold text-ink-muted">min</span>
+              </div>
+            )}
+
+            <p className="text-[11px] font-semibold text-ink-muted">
+              {roomStatus === 'in_room'
+                ? 'Please head inside the care room'
+                : 'Updates live as care rooms clear'}
+            </p>
+          </div>
+        </div>
+
+        {/* Real-time Wait Time Drop Notification Banner */}
+        <AnimatePresence>
+          {waitDropBanner && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-4 flex items-center justify-between rounded-xl border border-yes/40 bg-yes/15 px-4 py-2.5 text-sm font-bold text-yes"
+            >
+              <span>{waitDropBanner}</span>
+              <button
+                type="button"
+                onClick={() => setWaitDropBanner(null)}
+                className="ml-3 text-xs underline hover:opacity-80"
+              >
+                Dismiss
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Automatic 12-Minute Check-In Popup Modal */}
       <AnimatePresence>

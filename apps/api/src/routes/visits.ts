@@ -75,11 +75,38 @@ export const visitRoutes: FastifyPluginAsync = async (app) => {
 
   /** Polled by the kiosk: has the nurse called the child in? When is the next check-in due? */
   app.get('/visits/:id/status', async (req) => {
+    const rawId = (req.params as { id?: string })?.id;
+    if (rawId === 'demo') {
+      return {
+        status: 'waiting',
+        current_node: null,
+        next_checkin_at: null,
+        assigned_nurse: {
+          id: 'nurse-sarah',
+          name: 'Nurse Sarah',
+          title: 'Pediatric Emergency RN',
+          avatar: '👩‍⚕️',
+        },
+        estimated_wait_minutes: 8,
+        queue_position: 1,
+      };
+    }
     const { id } = parse(IdParams, req.params);
-    const [visit, checkins] = await Promise.all([engine.loadVisit(id), db.listCheckins(id)]);
+    const [visit, checkins, assignment] = await Promise.all([
+      engine.loadVisit(id),
+      db.listCheckins(id),
+      db.getVisitAssignment(id),
+    ]);
     const last = checkins.at(-1)?.at ?? visit.parent_confirmed_at;
     const next_checkin_at =
       visit.status === 'waiting' && last ? new Date(new Date(last).getTime() + env.CHECKIN_INTERVAL_SEC * 1000) : null;
-    return { status: visit.status, current_node: visit.current_node, next_checkin_at };
+    return {
+      status: visit.status,
+      current_node: visit.current_node,
+      next_checkin_at,
+      assigned_nurse: assignment.assignedNurse,
+      estimated_wait_minutes: assignment.estimatedWaitMinutes,
+      queue_position: assignment.queuePosition,
+    };
   });
 };
