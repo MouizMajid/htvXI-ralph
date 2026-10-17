@@ -1,1 +1,9 @@
-{ "_note": "TODO — phrase list to be written/reviewed by a speaker of this language", "phrases": [] }
+{
+  "_status": "DRAFT — needs review by a Mandarin speaker. Matched as substrings (no word spaces in Chinese).",
+  "phrases": [
+    "打我", "他打我", "她打我", "爸爸打我", "妈妈打我", "踢我", "揍我",
+    "伤害我", "摸我", "摸我的私处", "碰我的私处",
+    "不敢回家", "怕回家", "害怕回家", "在家不安全",
+    "把我锁", "烫我", "烧我", "不给我吃饭"
+  ]
+}
