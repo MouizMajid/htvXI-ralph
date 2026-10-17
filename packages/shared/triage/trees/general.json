@@ -1,0 +1,49 @@
+{
+  "id": "general",
+  "version": 1,
+  "start": "what_wrong",
+  "nodes": {
+    "what_wrong": {
+      "ask": "Can you tell me what's bothering you?",
+      "answer_type": "free_speech",
+      "slot": "complaint_words",
+      "next": [{ "default": "where" }]
+    },
+    "where": {
+      "ask": "Can you show me where you feel bad?",
+      "answer_type": "body_map",
+      "slot": "pain_location",
+      "next": [{ "default": "pain_face" }]
+    },
+    "pain_face": {
+      "ask": "Which face shows how you feel?",
+      "answer_type": "faces",
+      "slot": "pain_face",
+      "next": [{ "default": "how_long" }]
+    },
+    "how_long": {
+      "ask": "Did it start today, or before today?",
+      "answer_type": "choice",
+      "options": ["today", "before today", "not sure"],
+      "slot": "onset_child",
+      "next": [{ "default": "hot" }]
+    },
+    "hot": {
+      "ask": "Do you feel hot or shivery?",
+      "answer_type": "yes_no",
+      "slot": "feels_hot",
+      "next": [{ "default": "breathing" }]
+    },
+    "breathing": {
+      "ask": "Is it hard to breathe right now?",
+      "answer_type": "yes_no",
+      "slot": "hard_to_breathe",
+      "next": [{ "default": "anything_else" }]
+    },
+    "anything_else": {
+      "ask": "Is there anything else you want to tell me?",
+      "answer_type": "free_speech",
+      "slot": "anything_else"
+    }
+  }
+}

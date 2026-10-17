@@ -1,0 +1,189 @@
+{
+  "welcome": {
+    "greeting": "Hi! I'm Ralph. Can you help me learn how you're feeling?",
+    "start": "Let's go!"
+  },
+  "oops": "Oops, let's try tapping!",
+  "language": {
+    "title": "Which language?",
+    "hint": "Grown-ups: pick the language your child speaks best."
+  },
+  "who": {
+    "title": "Hi grown-up! Who's here today?",
+    "name": "Child's first name",
+    "age": "Age (years)",
+    "weight": "Weight in kg (optional)",
+    "next": "Next",
+    "parentModeNote": "Under 4? You'll answer for them, and Ralph will help."
+  },
+  "complaint": {
+    "ask": "What's bothering you today?",
+    "tummy": "My tummy",
+    "fever": "Hot or sick",
+    "breathing": "Hard to breathe or coughing",
+    "other": "Something else"
+  },
+  "parentMode": "Grown-up, please answer for {{name}}.",
+  "answers": {
+    "yes": "Yes",
+    "no": "No",
+    "not_sure": "Not sure"
+  },
+  "options": {
+    "today": "Today",
+    "before today": "Before today",
+    "not sure": "Not sure",
+    "normal": "Normal",
+    "runny": "Runny",
+    "not gone": "Haven't gone"
+  },
+  "faces": {
+    "0": "Fine",
+    "1": "A tiny bit",
+    "2": "A bit",
+    "3": "Quite a lot",
+    "4": "A lot",
+    "5": "The worst"
+  },
+  "number": {
+    "orMore": "{{n}} or more"
+  },
+  "bodyMap": {
+    "front": "Front",
+    "back": "Back",
+    "allOver": "All over",
+    "hint": "Tap where it hurts",
+    "confirm": "That's the spot!"
+  },
+  "regions": {
+    "head": "Head",
+    "throat": "Throat",
+    "chest": "Chest",
+    "upper_tummy": "Upper tummy",
+    "belly_button": "Around belly button",
+    "lower_left_tummy": "Lower-left tummy",
+    "lower_middle_tummy": "Lower-middle tummy",
+    "lower_right_tummy": "Lower-right tummy",
+    "back": "Back",
+    "arms": "Arms",
+    "legs": "Legs",
+    "all_over": "All over"
+  },
+  "freeText": {
+    "placeholder": "A grown-up can type what they say…",
+    "next": "Next",
+    "skip": "Skip"
+  },
+  "ralph": {
+    "thanks": "Thank you!"
+  },
+  "parent": {
+    "title": "Grown-up: please check what {{name}} told Ralph",
+    "change": "Change",
+    "skipped": "Skipped",
+    "edited": "changed",
+    "more": "A few questions for you",
+    "onset": "When did it start?",
+    "onsetOptions": {
+      "today": "Today",
+      "1_2_days": "1–2 days ago",
+      "more_than_2_days": "More than 2 days ago",
+      "not_sure": "Not sure"
+    },
+    "maxTemp": "Highest temperature (°C), if you measured it",
+    "meds": "Any medicine given? What and when?",
+    "fluids": "Keeping drinks down?",
+    "peed": "Peed in the last 8 hours?",
+    "sleepy": "Unusually sleepy or hard to wake?",
+    "rash": "Any rash?",
+    "conditions": "Health conditions or allergies?",
+    "notes": "Anything else the nurse should know?",
+    "submit": "Send to the nurse"
+  },
+  "waiting": {
+    "title": "Thanks, {{name}}! Let's hang out while we wait for the nurse.",
+    "subtitle": "Play a game or just talk and rest with Ralph.",
+    "games": "Pick a game below or chat with Ralph!",
+    "playFirefly": "Play Firefly Tap ✨",
+    "playCyber": "Launch Cyber Hack ⚡",
+    "companionTitle": "Don't feel like playing a game?",
+    "companionDesc": "Just talk with Ralph about how you feel or your favourite hobbies — or rest quietly and Ralph will check on you every 12 minutes (unless muted).",
+    "talkWithRalph": "Talk with Ralph 🦝"
+  },
+  "goodbye": {
+    "title": "Bye, {{name}}! The nurse is ready for you.",
+    "sticker": "Here's a sticker for being so brave!",
+    "done": "Done"
+  },
+  "games": {
+    "common": {
+      "back": "Back",
+      "exit": "Exit",
+      "start": "Let's Play!",
+      "playAgain": "Play Again",
+      "done": "Back to Ralph"
+    },
+    "hand": {
+      "title": "Which hand do you draw with?",
+      "titleCyber": "Operator check: which hand do you write with?",
+      "left": "Left",
+      "right": "Right",
+      "unsure": "Not sure",
+      "drawHand": "the hand you draw with",
+      "otherHand": "your other hand",
+      "leftHand": "your LEFT hand",
+      "rightHand": "your RIGHT hand"
+    },
+    "fireflyTap": {
+      "title": "Firefly Tap",
+      "subtitle": "Catch the glowing bugs for Ralph's lantern!",
+      "cardDesc": "Tap the glowing fireflies before they fly away to light up Ralph's lantern!",
+      "readyDom": "Round 1: Use {{hand}}!",
+      "readyNon": "Awesome! Now try with {{hand}}!",
+      "instructions": "Tap each glowing firefly as fast as you can before it flies away!",
+      "finishNow": "All done",
+      "caught": "Caught",
+      "round1": "Round 1 of 2",
+      "round2": "Round 2 of 2",
+      "doneTitle": "You caught {{count}} fireflies!",
+      "doneBody": "Ralph's lantern is super bright now. Thank you!"
+    },
+    "cyber": {
+      "cardTitle": "Cyber Circuit: Firewall Hacker",
+      "cardDesc": "Connect nodes 1➔25 to boot up, then alternate 1➔A➔2➔B under the clock to unlock the VIP Wi-Fi code!",
+      "phase1Title": "PHASE 1 // SYSTEM BOOT (1 ➔ 25)",
+      "offhandTitle": "AUX RELAY // OFF-HAND CALIBRATION",
+      "phase2Title": "PHASE 2 // FIREWALL BYPASS (1 ➔ A ➔ 2 ➔ B)",
+      "warmupHeading": "Boot Up the Neural Link",
+      "warmupDesc": "Use {{hand}}. Drag your finger (or tap) to connect the glowing blue nodes in order from 1 to 25 as fast as you can to boot up the hack.",
+      "launchPhase1": "INITIALIZE BOOT (1 ➔ 25)",
+      "offhandHeading": "Quick Backup-Hand Sync (1 ➔ 10)",
+      "offhandDesc": "Switch to {{hand}} for a quick 10-node sync before breaching the main firewall.",
+      "startOffhand": "SYNC BACKUP HAND",
+      "skipToPhase2": "Skip to Firewall Bypass",
+      "bypassHeading": "Alternate Numbers & Letters!",
+      "bypassDesc": "The security grid now mixes numbers (1–13) and letters (A–L). Alternate your connections: 1 ➔ A ➔ 2 ➔ B ➔ 3 ➔ C … before the {{sec}}s countdown hits zero! Wrong nodes trigger a system glitch.",
+      "launchBypass": "BREACH FIREWALL",
+      "unlockedTitle": "Clinic VIP Wi-Fi & Reward Unlocked!"
+    }
+  },
+  "companion": {
+    "title": "Chat with Ralph",
+    "opening": "Hi {{name}}! We don't have to play any games. How are you feeling right now? Or we can chat about your favourite things!",
+    "activeSub": "Tell Ralph how you feel or chat about things you like!",
+    "quietSub": "Ralph is resting quietly next to you. Say anything to wake him, or he will check in soon.",
+    "switchGames": "Play a Game",
+    "sleepingMsg": "I'm resting right here with you. Tap or talk anytime!",
+    "nextCheckinIn": "Next check-in in {{sec}}s",
+    "demoCheckinNow": "Check in now (\"Hey, how are you feeling now?\")",
+    "checkinLine": "Hey, how are you feeling now?",
+    "painScaleLabel": "How much does it hurt right now? (optional)",
+    "feelBetter": "Feeling better",
+    "feelSame": "About the same",
+    "feelWorse": "Feeling worse",
+    "talkHobbies": "Talk about fun stuff",
+    "wantRest": "I want to rest",
+    "inputPlaceholder": "Type or tap to talk to Ralph…",
+    "send": "Send"
+  }
+}

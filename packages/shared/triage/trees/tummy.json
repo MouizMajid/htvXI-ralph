@@ -1,0 +1,66 @@
+{
+  "id": "tummy",
+  "version": 2,
+  "start": "where",
+  "nodes": {
+    "where": {
+      "ask": "Can you show me where your tummy hurts?",
+      "answer_type": "body_map",
+      "slot": "pain_location",
+      "next": [{ "default": "pain_face" }]
+    },
+    "pain_face": {
+      "ask": "Which face shows how much it hurts?",
+      "answer_type": "faces",
+      "slot": "pain_face",
+      "next": [{ "default": "how_long" }]
+    },
+    "how_long": {
+      "ask": "Did it start today, or before today?",
+      "answer_type": "choice",
+      "options": ["today", "before today", "not sure"],
+      "slot": "onset_child",
+      "next": [{ "default": "throw_up" }]
+    },
+    "throw_up": {
+      "ask": "Have you thrown up?",
+      "answer_type": "yes_no",
+      "slot": "vomiting",
+      "next": [
+        { "if": { "vomiting": "yes" }, "goto": "throw_up_count" },
+        { "default": "poop" }
+      ]
+    },
+    "throw_up_count": {
+      "ask": "How many times did you throw up?",
+      "answer_type": "number",
+      "max": 5,
+      "slot": "vomit_count",
+      "next": [{ "default": "drink" }]
+    },
+    "drink": {
+      "ask": "Can you drink water without throwing up?",
+      "answer_type": "yes_no",
+      "slot": "keeps_drinks",
+      "next": [{ "default": "poop" }]
+    },
+    "poop": {
+      "ask": "Has your poop been normal, runny, or have you not gone?",
+      "answer_type": "choice",
+      "options": ["normal", "runny", "not gone", "not sure"],
+      "slot": "poop",
+      "next": [{ "default": "hot" }]
+    },
+    "hot": {
+      "ask": "Do you feel hot or shivery?",
+      "answer_type": "yes_no",
+      "slot": "feels_hot",
+      "next": [{ "default": "anything_else" }]
+    },
+    "anything_else": {
+      "ask": "Is there anything else you want to tell me?",
+      "answer_type": "free_speech",
+      "slot": "anything_else"
+    }
+  }
+}

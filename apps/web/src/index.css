@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+
+/*
+ * THEME — the only place to change colours, fonts, and roundness.
+ * Components use these semantic names (bg-primary, text-ink, rounded-card…),
+ * never raw colours like bg-pink-500, so a restyle is a one-file change.
+ */
+/* `static`: always emit every token, even ones only referenced from JS (e.g. var(--color-face-${n})). */
+@theme static {
+  /* fonts */
+  --font-sans: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
+
+  /* surfaces */
+  --color-bg: #fdf8f0; /* kiosk background (warm off-white) */
+  --color-surface: #ffffff; /* cards, panels */
+  --color-ink: #2b2420; /* main text */
+  --color-ink-muted: #7a6f66; /* secondary text */
+
+  /* kiosk accents */
+  --color-primary: #e0607e; /* main action buttons */
+  --color-on-primary: #ffffff; /* text on primary */
+  --color-secondary: #4a90d9;
+  --color-on-secondary: #ffffff;
+  --color-accent: #f2b84b;
+
+  /* answer buttons */
+  --color-yes: #4caf7a;
+  --color-no: #e0607e;
+  --color-unsure: #b9aea4;
+
+  /* faces scale placeholders 0 (fine) … 5 (worst) — replaced by face-N.png art */
+  --color-face-0: #8fd19e;
+  --color-face-1: #b9de8a;
+  --color-face-2: #f2dc7d;
+  --color-face-3: #f5b971;
+  --color-face-4: #f08f6e;
+  --color-face-5: #e0607e;
+
+  /* body map placeholder */
+  --color-body: #f1e4d3;
+  --color-body-line: #c9b49b;
+  --color-body-selected: #e0607e;
+
+  /* staff status (colour-blind-safe; always paired with a text label) */
+  --color-success: #2e7d5b; /* stable */
+  --color-warning: #c77c02; /* watch */
+  --color-danger: #b3261e; /* escalate / alerts */
+  --color-staff-bg: #f6f7f9;
+
+  /* game: Firefly Tap (night sky) */
+  --color-night: #2a3168;
+  --color-night-deep: #141938;
+  --color-star: #c9d2ff;
+  --color-firefly: #fff59a;
+  --color-firefly-glow: #f7d94c;
+
+  /* game: Cyber Circuit (teen hacker terminal) */
+  --color-cyber-bg: #070b18;
+  --color-cyber-panel: #0f172e;
+  --color-cyber-grid: #16244a;
+  --color-cyber-node: #38bdf8;
+  --color-cyber-letter: #c084fc;
+  --color-cyber-ok: #34d399;
+  --color-cyber-error: #fb3b5c;
+  --color-cyber-text: #e0f2fe;
+  --color-cyber-muted: #7c93b8;
+
+  /* shape */
+  --radius-card: 1.75rem;
+  --radius-pill: 9999px;
+  --shadow-soft: 0 6px 20px rgb(43 36 32 / 0.08);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  -webkit-tap-highlight-color: transparent;
+}

@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  
+  <defs>
+    <!-- Watercolour body shading -->
+    <radialGradient id="furBody" cx="48%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#f5f6f8"/>
+      <stop offset="65%" stop-color="#e4e6ec"/>
+      <stop offset="100%" stop-color="#cfd2dc"/>
+    </radialGradient>
+    <radialGradient id="furHead" cx="50%" cy="40%" r="56%">
+      <stop offset="0%" stop-color="#f7f8fa"/>
+      <stop offset="70%" stop-color="#e5e7ed"/>
+      <stop offset="100%" stop-color="#d0d3dd"/>
+    </radialGradient>
+    <radialGradient id="blushL" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f59ca9" stop-opacity="0.72"/>
+      <stop offset="65%" stop-color="#f5b5be" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f5b5be" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blushR" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f59ca9" stop-opacity="0.72"/>
+      <stop offset="65%" stop-color="#f5b5be" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f5b5be" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="earTip" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#585a64"/>
+      <stop offset="65%" stop-color="#7c7f8a"/>
+      <stop offset="100%" stop-color="#dfe1e8" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#2b2420" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <!-- Little black raccoon feet at bottom -->
+    <g>
+      <!-- Left foot -->
+      <path d="M 412 815 L 395 885" stroke="#27282e" stroke-width="22" stroke-linecap="round"/>
+      <path d="M 395 882 L 356 898 M 395 882 L 372 922 M 395 882 L 402 925 M 395 882 L 432 904"
+            stroke="#27282e" stroke-width="11" stroke-linecap="round"/>
+      <!-- Right foot -->
+      <path d="M 652 805 L 672 868" stroke="#27282e" stroke-width="22" stroke-linecap="round"/>
+      <path d="M 672 866 L 635 884 M 672 866 L 664 908 M 672 866 L 698 902 M 672 866 L 722 878"
+            stroke="#27282e" stroke-width="11" stroke-linecap="round"/>
+    </g>
+
+    
+      <!-- Left arm raised out -->
+      <path d="M 355 535 C 295 510, 248 485, 212 462 L 195 488 C 235 535, 290 575, 345 600 Z"
+            fill="url(#furBody)" stroke="#2c2d33" stroke-width="8.5" stroke-linejoin="round"/>
+      
+    <g transform="translate(196 468) rotate(-52) scale(1.05)">
+      <ellipse cx="0" cy="6" rx="18" ry="15" fill="#27282e"/>
+      <path d="M -14 0 L -24 -26 M -5 -4 L -9 -32 M 5 -4 L 9 -32 M 14 0 L 24 -25"
+            stroke="#27282e" stroke-width="9" stroke-linecap="round"/>
+    </g>
+      <!-- Right arm raised high waving -->
+      <path d="M 685 520 C 745 480, 795 435, 832 392 L 852 418 C 815 488, 765 555, 700 595 Z"
+            fill="url(#furBody)" stroke="#2c2d33" stroke-width="8.5" stroke-linejoin="round"/>
+      
+    <g transform="translate(848 395) rotate(-28) scale(1.08)">
+      <ellipse cx="0" cy="6" rx="18" ry="15" fill="#27282e"/>
+      <path d="M -14 0 L -24 -26 M -5 -4 L -9 -32 M 5 -4 L 9 -32 M 14 0 L 24 -25"
+            stroke="#27282e" stroke-width="9" stroke-linecap="round"/>
+    </g>
+    
+
+    <!-- Fluffy pear-shaped torso with sketchy fur tufts -->
+    <path d="M 372 485
+             C 340 545, 326 600, 338 640
+             L 322 652 L 338 668
+             C 320 735, 342 805, 392 835
+             C 435 845, 472 818, 535 815
+             C 595 812, 642 832, 682 815
+             C 730 785, 745 710, 726 645
+             L 740 632 L 724 612
+             C 732 565, 718 515, 685 480 Z"
+          fill="url(#furBody)" stroke="#2c2d33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Soft watercolour belly shading & tiny fur V-tufts (matches photo!) -->
+    <ellipse cx="535" cy="665" rx="145" ry="125" fill="#ffffff" opacity="0.55"/>
+    <path d="M 522 606 L 532 624 L 544 608" fill="none" stroke="#454750" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 455 745 L 465 762 L 478 746" fill="none" stroke="#454750" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 622 722 Q 638 714 652 724" fill="none" stroke="#454750" stroke-width="5.5" stroke-linecap="round"/>
+
+    <!-- Doctor Stethoscope around neck (chestpiece on viewer-left, binaurals on viewer-right) -->
+    <g>
+      <!-- Left tube + round chestpiece -->
+      <path d="M 418 475 C 405 545, 412 605, 430 645"
+            fill="none" stroke="#2c2d33" stroke-width="22" stroke-linecap="round"/>
+      <path d="M 418 475 C 405 545, 412 605, 430 645"
+            fill="none" stroke="#7c808b" stroke-width="11" stroke-linecap="round"/>
+      <circle cx="436" cy="656" r="28" fill="#7c808b" stroke="#2c2d33" stroke-width="8"/>
+      <circle cx="436" cy="656" r="12" fill="#b4b8c2" stroke="#2c2d33" stroke-width="5"/>
+
+      <!-- Right tube + U-shaped binaural earpieces -->
+      <path d="M 636 462 C 652 505, 662 535, 666 555"
+            fill="none" stroke="#2c2d33" stroke-width="22" stroke-linecap="round"/>
+      <path d="M 636 462 C 652 505, 662 535, 666 555"
+            fill="none" stroke="#7c808b" stroke-width="11" stroke-linecap="round"/>
+      <path d="M 666 552
+               C 632 575, 616 628, 636 664
+                M 666 552
+               C 700 572, 706 626, 676 664"
+            fill="none" stroke="#2c2d33" stroke-width="20" stroke-linecap="round"/>
+      <path d="M 666 552
+               C 632 575, 616 628, 636 664
+               M 666 552
+               C 700 572, 706 626, 676 664"
+            fill="none" stroke="#7c808b" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="642" cy="666" r="9" fill="#232428"/>
+      <circle cx="670" cy="666" r="9" fill="#232428"/>
+    </g>
+
+    <!-- Raccoon Head & Ears (tilted slightly for charm just like the drawing) -->
+    <g>
+      <!-- Left Ear -->
+      <path d="M 295 335
+               C 278 245, 305 182, 355 186
+               C 402 190, 442 225, 468 258 Z"
+            fill="url(#furHead)" stroke="#2c2d33" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M 298 310 C 284 242, 308 186, 355 190 C 392 194, 425 218, 448 245 Z"
+            fill="url(#earTip)"/>
+      <path d="M 366 245 C 350 258, 356 276, 376 275 C 355 285, 358 302, 384 296"
+            fill="none" stroke="#2c2d33" stroke-width="6.5" stroke-linecap="round"/>
+
+      <!-- Right Ear -->
+      <path d="M 605 242
+               C 645 182, 705 148, 748 164
+               C 786 180, 795 248, 768 318 Z"
+            fill="url(#furHead)" stroke="#2c2d33" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M 622 232 C 655 180, 706 152, 745 166 C 778 180, 786 238, 766 296 Z"
+            fill="url(#earTip)"/>
+      <path d="M 692 222 L 696 256 L 716 235 L 714 270"
+            fill="none" stroke="#2c2d33" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Fluffy Cheek & Head Silhouette -->
+      <path d="M 295 332
+               L 272 338 L 292 358
+               C 265 385, 255 415, 286 432
+               L 268 450
+               C 312 490, 398 505, 505 498
+               C 535 495, 548 480, 560 480
+               C 572 480, 590 492, 622 488
+               C 718 475, 785 432, 804 382
+               L 784 368 L 802 346
+               C 790 326, 775 312, 764 306
+               C 715 268, 650 245, 595 242
+               L 598 220 L 578 236 L 568 220 L 555 240
+               C 505 236, 462 246, 432 258 Z"
+            fill="url(#furHead)" stroke="#2c2d33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Subtle forehead grey V-patch -->
+      <path d="M 480 265 Q 542 325 554 395 Q 572 320 618 258 Q 550 245 480 265 Z"
+            fill="#c6c9d4" opacity="0.65"/>
+
+      <!-- Soft grey teardrop eye patches (not harsh black bandit mask!) -->
+      <path d="M 326 420
+               C 315 365, 378 315, 456 324
+               C 508 330, 526 378, 508 426
+               C 488 468, 398 482, 344 452 Z"
+            fill="#b9bcc7" opacity="0.82"/>
+      <path d="M 578 398
+               C 572 345, 616 298, 682 304
+               C 742 310, 774 358, 756 408
+               C 736 452, 654 462, 600 434 Z"
+            fill="#b9bcc7" opacity="0.82"/>
+
+      <!-- Warm Rosy Pink Cheeks -->
+      <ellipse cx="382" cy="442" rx="68" ry="46" fill="url(#blushL)"/>
+      <ellipse cx="705" cy="420" rx="68" ry="46" fill="url(#blushR)"/>
+
+      <!-- White muzzle bridge -->
+      <ellipse cx="554" cy="436" rx="52" ry="44" fill="#f7f8fa"/>
+
+      
+      <!-- Happy curved eyes + sparkles -->
+      <circle cx="458" cy="395" r="20" fill="#232428"/>
+      <circle cx="452" cy="388" r="6.5" fill="#ffffff"/>
+      <circle cx="626" cy="380" r="20" fill="#232428"/>
+      <circle cx="620" cy="373" r="6.5" fill="#ffffff"/>
+    
+
+      <!-- Cute little dark triangular nose + philtrum line -->
+      <path d="M 532 436 Q 556 424 580 434 Q 574 462 556 464 Q 538 462 532 436 Z"
+            fill="#25262b" stroke="#25262b" stroke-width="4" stroke-linejoin="round"/>
+      <ellipse cx="548" cy="440" rx="6" ry="3.5" fill="#6b6e78"/>
+      <line x1="556" y1="462" x2="556" y2="478" stroke="#2c2d33" stroke-width="6.5" stroke-linecap="round"/>
+
+      
+    <path d="M 534 475
+             C 532 526, 582 526, 580 473 Z"
+          fill="#f27d85" stroke="#2c2d33" stroke-width="7.5" stroke-linejoin="round"/>
+    <path d="M 558 476 L 556 506" stroke="#2c2d33" stroke-width="5.5" stroke-linecap="round"/>
+  
+    </g>
+
+    
+  </g>
+</svg>

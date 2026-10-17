@@ -1,0 +1,11 @@
+{
+  "_status": "DRAFT — review by team. Matched as whole words on the normalized transcript and on English translations of every language. Avoid bare 'hurts me' (fires on 'my tummy hurts me').",
+  "phrases": [
+    "hits me", "hit me", "kicks me", "kicked me", "punches me", "punched me", "slaps me", "slapped me",
+    "he hurts me", "she hurts me", "they hurt me", "he hurt me", "she hurt me", "someone hurt me", "somebody hurt me",
+    "mom hurts me", "dad hurts me", "mommy hurts me", "daddy hurts me",
+    "touched me", "touches me", "touch my private", "touched my private", "secret touch",
+    "scared to go home", "afraid to go home", "scared of going home", "not safe at home", "don't feel safe at home",
+    "locked me", "locks me", "burned me", "nobody feeds me", "no one feeds me"
+  ]
+}

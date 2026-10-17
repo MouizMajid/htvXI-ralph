@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Also loaded by Node on Vercel (via the API): relative imports must include `.js`.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
+  "include": ["**/*.ts", "**/*.json"],
+  "exclude": ["node_modules", "package.json", "tsconfig.json"]
+}

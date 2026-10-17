@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Node runs the compiled output on Vercel, so use Node's resolution rules:
+    // relative imports must include `.js`, and typecheck enforces it.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"]
+  },
+  "include": ["src"]
+}
