@@ -1,5 +1,5 @@
-import type { Reason, SlotMap, SuggestedLevel } from '../types';
-import type { Tree } from '../schemas';
+import type { Reason, SlotMap, SuggestedLevel } from '../types.js';
+import type { Tree } from '../schemas.js';
 
 /**
  * Team-defined DEMO rules — not clinically validated.

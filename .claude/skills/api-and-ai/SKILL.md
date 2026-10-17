@@ -45,6 +45,8 @@ The staff side uses **no AI**. Gemini is used for exactly three things:
 - Two Vercel projects from the same GitHub repo:
   - **`ralph-api`** — Root Directory `apps/api`. Framework auto-detected as Fastify from `src/index.ts` (which calls `listen`). All env vars from `.env.example` (except `PORT`) go in its Environment Variables.
   - **`ralph-web`** — Root Directory `apps/web`, Vite preset. `apps/web/vercel.json` rewrites `/api/:path*` to the API project's production URL, then falls back to `/index.html`. **If the API project's URL isn't `ralph-api.vercel.app`, update that rewrite.**
+- **Gotchas that broke the first deploy (don't reintroduce):** (1) relative imports need `.js` extensions; (2) `@ralph/shared` must resolve to compiled `dist/` (built by its `prepare` script); (3) **never `await app.listen()`** at top level — Vercel intercepts `listen`, and awaiting it hangs every request.
+- Debugging: `npx vercel deploy` (from repo root, linked to `ralph-api`) makes a preview from local files without committing; `npx vercel logs --deployment <url>` shows runtime errors (requests that hang only log after the function times out).
 - Serverless rules: no in-memory state or `setInterval` between requests (check-in timing is driven by the kiosk client + `CHECKIN_INTERVAL_SEC`); no writing files (use Postgres); DB pool `max: 3`; body ≤ 4.5 MB.
 - Every push to a branch gets a preview URL; `main` → production.
 

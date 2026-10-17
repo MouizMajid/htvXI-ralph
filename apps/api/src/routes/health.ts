@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { sql } from '../db/client';
+import { SUPPORTED_LANGS } from '@ralph/shared';
+import { sql } from '../db/client.js';
 
 export const healthRoutes: FastifyPluginAsync = async (app) => {
   app.get('/health', async () => {
@@ -12,6 +13,7 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
         db = 'error';
       }
     }
-    return { ok: true, db };
+    // `langs` proves the @ralph/shared workspace package loads in the deployed function.
+    return { ok: true, db, langs: SUPPORTED_LANGS.length };
   });
 };

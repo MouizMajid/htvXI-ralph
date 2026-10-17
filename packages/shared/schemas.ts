@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SUPPORTED_LANGS } from './types';
+import { SUPPORTED_LANGS } from './types.js';
 
 export const LangSchema = z.enum(SUPPORTED_LANGS);
 

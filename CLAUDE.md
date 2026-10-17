@@ -46,6 +46,8 @@ docs/                pitch, demo script, tracks, privacy, slice plan (for humans
 
 ## Coding conventions
 - TS strict. Shared types in `packages/shared`; it is the contract between web and api.
+- **In `apps/api` and `packages/shared`, relative imports end in `.js`** (`import { env } from './env.js'`) — Vercel runs compiled JS under Node's ESM rules. `pnpm typecheck` enforces it (NodeNext).
+- `packages/shared` compiles to `dist/` on `pnpm install` (that's what Vercel's API loads); dev, Vite, and Vitest read the `.ts` source via the `source` export condition. If you add a shared file, nothing else is needed — but re-run `pnpm install` before testing a deploy locally.
 - Zod-validate every external input and every Gemini response. Never trust LLM JSON unparsed.
 - Tree, alert, and safeguarding logic are **pure functions with Vitest tests**, including Maya-scenario fixtures.
 - No model IDs, keys, or URLs hard-coded — env only (`.env.example`).

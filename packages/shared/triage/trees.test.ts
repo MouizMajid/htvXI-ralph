@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { TreeSchema } from '../schemas';
-import { nextNodeId } from './rules';
-import tummyJson from './trees/tummy.json';
+import { TreeSchema } from '../schemas.js';
+import { nextNodeId } from './rules.js';
+import tummyJson from './trees/tummy.json' with { type: 'json' };
 
 const trees = [tummyJson];
 
