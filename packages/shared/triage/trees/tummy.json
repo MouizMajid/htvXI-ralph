@@ -1,0 +1,40 @@
+{
+  "id": "tummy",
+  "version": 1,
+  "start": "where",
+  "nodes": {
+    "where": {
+      "ask": "Can you show me where your tummy hurts?",
+      "answer_type": "body_map",
+      "slot": "pain_location",
+      "next": [{ "default": "how_long" }]
+    },
+    "how_long": {
+      "ask": "Did it start today, or before today?",
+      "answer_type": "choice",
+      "options": ["today", "before today", "not sure"],
+      "slot": "onset_child",
+      "next": [{ "default": "throw_up" }]
+    },
+    "throw_up": {
+      "ask": "Have you thrown up?",
+      "answer_type": "yes_no",
+      "slot": "vomiting",
+      "next": [
+        { "if": { "vomiting": "yes" }, "goto": "throw_up_count" },
+        { "default": "pain_face" }
+      ]
+    },
+    "throw_up_count": {
+      "ask": "How many times did you throw up?",
+      "answer_type": "number",
+      "slot": "vomit_count",
+      "next": [{ "default": "pain_face" }]
+    },
+    "pain_face": {
+      "ask": "Which face looks like how you feel?",
+      "answer_type": "faces",
+      "slot": "pain_face"
+    }
+  }
+}

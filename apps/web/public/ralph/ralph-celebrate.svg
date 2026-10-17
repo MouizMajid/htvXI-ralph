@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- PLACEHOLDER. Replace by dropping ralph-celebrate.png (1024x1024, transparent) next to this file. -->
+  <ellipse cx="512" cy="760" rx="210" ry="200" fill="#a3a3ab"/>
+  <ellipse cx="512" cy="790" rx="120" ry="130" fill="#e8e4dc"/>
+  <ellipse cx="330" cy="560" rx="48" ry="100" fill="#8d8d95" transform="rotate(-30 330 560)"/><ellipse cx="694" cy="560" rx="48" ry="100" fill="#8d8d95" transform="rotate(30 694 560)"/>
+              <circle cx="220" cy="300" r="14" fill="#e0607e"/><circle cx="820" cy="260" r="14" fill="#4a90d9"/><circle cx="800" cy="420" r="12" fill="#4caf7a"/><circle cx="240" cy="460" r="12" fill="#f2b84b"/>
+  <circle cx="340" cy="260" r="70" fill="#8d8d95"/><circle cx="340" cy="260" r="36" fill="#f3c6cf"/>
+  <circle cx="684" cy="260" r="70" fill="#8d8d95"/><circle cx="684" cy="260" r="36" fill="#f3c6cf"/>
+  <circle cx="512" cy="430" r="210" fill="#a3a3ab"/>
+  <ellipse cx="512" cy="480" rx="120" ry="90" fill="#e8e4dc"/>
+  <path d="M340 400 q172 -80 344 0 q-20 60 -90 50 q-82 -20 -164 0 q-70 10 -90 -50z" fill="#3a3a3a"/>
+  <path d="M400 412 q30 -26 60 0 M564 412 q30 -26 60 0" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <ellipse cx="512" cy="462" rx="22" ry="16" fill="#222"/>
+  <path d="M462 494 q50 70 100 0 z" fill="#5a2230"/>
+  <rect x="262" y="960" width="500" height="52" rx="26" fill="#ffffff" stroke="#bbb" stroke-width="3"/>
+  <text x="512" y="996" text-anchor="middle" font-size="30" font-family="sans-serif" fill="#666">ralph-celebrate · placeholder</text>
+</svg>

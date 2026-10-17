@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- PLACEHOLDER tail layer. Same 1024 canvas; tail base sits at about (690, 820). -->
+  <g transform="rotate(-35 690 820)">
+    <ellipse cx="840" cy="820" rx="170" ry="70" fill="#a3a3ab"/>
+    <ellipse cx="760" cy="820" rx="22" ry="62" fill="#3a3a3a"/>
+    <ellipse cx="840" cy="820" rx="22" ry="70" fill="#3a3a3a"/>
+    <ellipse cx="920" cy="820" rx="20" ry="58" fill="#3a3a3a"/>
+    <ellipse cx="992" cy="820" rx="18" ry="34" fill="#3a3a3a"/>
+  </g>
+</svg>
