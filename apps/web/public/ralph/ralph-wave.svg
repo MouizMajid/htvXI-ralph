@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- PLACEHOLDER. Replace by dropping ralph-wave.png (1024x1024, transparent) next to this file. -->
+  <ellipse cx="512" cy="760" rx="210" ry="200" fill="#a3a3ab"/>
+  <ellipse cx="512" cy="790" rx="120" ry="130" fill="#e8e4dc"/>
+  <ellipse cx="370" cy="740" rx="50" ry="90" fill="#8d8d95"/><ellipse cx="700" cy="560" rx="48" ry="100" fill="#8d8d95" transform="rotate(30 700 560)"/>
+  <circle cx="340" cy="260" r="70" fill="#8d8d95"/><circle cx="340" cy="260" r="36" fill="#f3c6cf"/>
+  <circle cx="684" cy="260" r="70" fill="#8d8d95"/><circle cx="684" cy="260" r="36" fill="#f3c6cf"/>
+  <circle cx="512" cy="430" r="210" fill="#a3a3ab"/>
+  <ellipse cx="512" cy="480" rx="120" ry="90" fill="#e8e4dc"/>
+  <path d="M340 400 q172 -80 344 0 q-20 60 -90 50 q-82 -20 -164 0 q-70 10 -90 -50z" fill="#3a3a3a"/>
+  <circle cx="430" cy="400" r="34" fill="#fff"/><circle cx="594" cy="400" r="34" fill="#fff"/>
+         <circle cx="436" cy="406" r="16" fill="#222"/><circle cx="600" cy="406" r="16" fill="#222"/>
+  <ellipse cx="512" cy="462" rx="22" ry="16" fill="#222"/>
+  <path d="M462 494 q50 70 100 0 z" fill="#5a2230"/>
+  <rect x="262" y="960" width="500" height="52" rx="26" fill="#ffffff" stroke="#bbb" stroke-width="3"/>
+  <text x="512" y="996" text-anchor="middle" font-size="30" font-family="sans-serif" fill="#666">ralph-wave · placeholder</text>
+</svg>

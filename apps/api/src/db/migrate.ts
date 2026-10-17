@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { requireDb } from './client';
+import { requireDb } from './client.js';
 
 const sql = requireDb();
 const dir = fileURLToPath(new URL('./migrations/', import.meta.url));

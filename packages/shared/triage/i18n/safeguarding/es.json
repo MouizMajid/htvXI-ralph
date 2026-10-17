@@ -1,1 +1,10 @@
-{ "_note": "TODO — phrase list to be written/reviewed by a speaker of this language", "phrases": [] }
+{
+  "_status": "DRAFT — needs review by a Spanish speaker. Avoid bare 'me lastima' (fires on 'me lastima la panza').",
+  "phrases": [
+    "me pega", "me pegan", "me pegó", "me golpea", "me golpean", "me golpeó",
+    "él me lastima", "ella me lastima", "me hace daño él", "me hacen daño",
+    "me toca mis partes", "me tocó mis partes", "me tocó ahí", "toque secreto",
+    "miedo de ir a casa", "miedo de volver a casa", "no estoy seguro en casa", "no estoy segura en casa",
+    "me encierra", "me encierran", "me quemó", "nadie me da de comer"
+  ]
+}

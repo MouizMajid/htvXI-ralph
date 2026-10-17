@@ -1,1 +1,11 @@
-{ "_note": "TODO — phrase list to be written/reviewed by a speaker of this language", "phrases": [] }
+{
+  "_status": "DRAFT — needs review by a Hindi speaker. Includes common romanized (Hinglish) forms because transcripts may come back in Latin script.",
+  "phrases": [
+    "मुझे मारते हैं", "मुझे मारता है", "मुझे मारती है", "मुझे मारा", "मुझे पीटते हैं", "मुझे पीटता है", "मुझे पीटा",
+    "उसने मुझे छुआ", "मुझे गलत तरीके से छुआ", "मेरे प्राइवेट पार्ट",
+    "घर जाने से डर", "घर जाने में डर", "घर पर सुरक्षित नहीं",
+    "मुझे बंद कर देते", "मुझे जलाया", "मुझे खाना नहीं देते",
+    "mujhe marte hain", "mujhe maarte hain", "mujhe marta hai", "mujhe maarta hai", "mujhe peet", "mujhe pitai",
+    "ghar jaane se darr", "ghar jane se dar"
+  ]
+}

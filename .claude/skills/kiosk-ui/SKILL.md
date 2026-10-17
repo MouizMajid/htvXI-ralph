@@ -1,6 +1,6 @@
 ---
 name: kiosk-ui
-description: RALPH frontend — child/parent kiosk flow, the three alertness games, hand-drawn art filenames and animation, visual style, and the staff dashboard (queue, patient view, demo panel). Use when working in apps/web.
+description: RALPH frontend — child/parent kiosk flow, the waiting-room games and check-ins, hand-drawn art filenames and animation, theming, and the staff dashboard (queue, conversation view, demo panel). Use when working in apps/web.
 ---
 
 # Kiosk + dashboard UI
@@ -13,44 +13,45 @@ description: RALPH frontend — child/parent kiosk flow, the three alertness gam
 5. **Adaptive questions:** tree runs (see `triage-engine`). Ralph asks → child holds talk button (or taps) → transcript shown → interpret → next node.
 6. **Body map + faces scale:** front/back drawing with SVG hotspots; team-drawn faces 0–5.
 7. **Parent confirm:** child's answers in plain text, editable; parent-only questions: onset, highest temperature, meds + when, fluids in/out, known conditions, free text. Safeguarding info never appears here.
-8. **Waiting mode:** games. Every `CHECKIN_INTERVAL_SEC` (demo 120, real 900) Ralph checks in: "How's your tummy now? Better, same, or worse?" + faces.
-9. **Called in:** "Ralph says bye" + sticker reward.
+8. **Waiting mode:** game menu. Every `CHECKIN_INTERVAL_SEC` (demo 120, real 900) a check-in is **due**; Ralph pops in **at the end of the current game round** (never mid-round): "How's your tummy now? Better, same, or worse?" + faces. No answer within ~30 s → logged `no_response`, back to games.
+9. **Called in:** when the nurse presses "Call in" on the dashboard, the kiosk (polling its own visit status) shows "Ralph says bye" + sticker reward. RALPH's job ends here; the rest happens in person.
 
 Flow state: one `useReducer` per session; components stay dumb. Any API error → "Oops, let's try tapping!" and continue.
 
-## Games (`kiosk/games`, ~45–60 s each)
-Frame as **"engagement and alertness trends,"** never a neurological test. Easier (bigger/slower) for younger kids.
-1. **Bubble Pop** — tap bubbles at random spots. Log reaction ms per target, hits, misses. (Tier 1)
-2. **Firefly Follow** — drag to follow a slow firefly. Log avg distance (tracking error px), time on target.
-3. **Ralph Says** — repeat a 3–5 coloured-shape sequence. Log longest correct sequence, response time.
-Each round: one `game_events` row per target/attempt + a summary.
+## Games (`kiosk/games`) — entertainment only
+Games exist to keep the child happily occupied between check-ins. **They are not tests, record no performance metrics, and never feed alerts.** No clinical wording anywhere in game UI, code comments, or pitch.
+- **Firefly Tap** (Tier 1, all ages): dark night scene; a glowing firefly appears at a random spot (10–90% of width/height) after a random 1–3 s delay; tap it to catch it into Ralph's jar. ~8 fireflies per round, then a cheerful "Round done!" Bigger, slower fireflies for younger kids. Use pointer events.
+- **Firewall Hacker** (Tier 2, ages ~8+): connect-the-dots. Round 1: drag through numbered nodes 1→N in order. Round 2: nodes are numbers in **two colours**; alternate colours while counting up (1 blue → 2 orange → 3 blue …) — no letters, so it works in every language. Layout shuffled every round. Mistake = gentle wobble, not a harsh fail. Optional visual-only timer.
+- A round lasts ~30–60 s so check-ins land often.
 
-## Staff dashboard (`apps/web/src/staff`)
-**Queue `/staff`:** sort by active alerts → suggested level → score → wait time. Row: name, age, complaint in child's words, level badge, band chip (stable/watch/escalate), wait time, pain sparkline. Live via Socket.IO; new alerts pulse + optional chime.
+## Staff dashboard (`apps/web/src/staff`) — no AI here
+Purpose: hand the nurse the child's conversation in a fast, readable form. **The nurse triages and talks to the child in person.** No AI-generated summaries, scores, suggested levels, or audio.
+
+**Queue `/staff`:** children with unacknowledged alerts first, then by arrival. Row: name, age, language, chief complaint in the child's words (English), alert chips with short reasons, wait time. Polls every `LIVE_POLL_MS` (`staff/live.ts`); new alerts (diff flag ids between polls) pulse + optional chime.
 
 **Patient view `/staff/visit/:id`:**
-- Summary card (Gemini, from structured data only): child quote + English, parent history, positives/negatives, red flags, suggested level + reasons
-- "Why flagged" reason strings
-- Trends: pain over time, reaction time vs baseline (from caggs)
-- Transcript: turn by turn, child words vs parent edits marked
-- Conversation opener: "Ralph told me your tummy hurts near your belly button. Can you show me where?"
-- ▶ Play briefing (nurse voice, 15–20 s)
-- Actions: confirm/override level, mark seen, note (all logged)
-- Safeguarding flag — only here, distinct style
-- "Limited signals — parent mode" note for under-4 visits
+- Header: name, age, language, complaint, arrived/wait time, "parent mode" badge if under 4
+- **Alerts** with reasons (acknowledge button); **safeguarding** flag only here, distinct style
+- **Answers at a glance:** table of structured slots (pain location, vomiting, count, pain face, …) + parent-only answers
+- **Conversation:** turn by turn — Ralph's question, child's answer in English with the original-language words alongside, timestamps; parent edits marked
+- **Check-ins:** time, better/same/worse, face
+- **Call in** button → visit status `in_room`, kiosk says goodbye
 
-**Demo panel `?demo=1`:** fast-forward time, trigger check-ins, inject scripted deterioration, reset seed.
+**Demo panel `?demo=1`:** fast-forward time, trigger a check-in, inject a scripted "getting worse" check-in, reset seed.
 
 ## Art pipeline
-Code ships with **placeholders using exact final filenames**; hand-drawn art drops in. Character: transparent PNG 1024×1024, icons 512×512, consistent canvas/position across frames.
+- **Never reference Ralph image paths directly.** Use `<Ralph pose="…" />` (`kiosk/components/Ralph.tsx`); it handles idle bob, blink, talk-frame cycling, and the tail layer. Poses: `idle | talk | listen | think | happy | gentle | wave | celebrate | sleep`.
+- `kiosk/art.ts` is the single manifest: frame list, pose → frame map, tail motion per pose, `SEPARATE_TAIL` toggle.
+- Each frame resolves to `public/ralph/<name>.png` if it exists, else the `<name>.svg` placeholder. Artists add PNGs; no code change. `/art` shows every frame + animated pose with placeholder/✓ status.
+- Character: transparent PNG 1024×1024, same canvas/position across frames (tail base ≈ (690, 820)). Round, chunky raccoon, big soft eyes in a **soft, cute (not bandit-like)** mask, striped fluffy tail; optional tiny stethoscope or tail bandage.
 
-Ralph the raccoon: round, chunky, big soft eyes in a **soft, cute (not bandit-like)** mask, small round ears, striped fluffy tail; optional tiny stethoscope or tail bandage. Tail is a separate layer (`ralph-tail.png`) animated with Framer Motion: slow sway idle, quick wag happy, curled for gentle.
+`public/ralph/`: `ralph-idle`, `ralph-blink`, `ralph-talk-1/2/3`, `ralph-listen`, `ralph-think`, `ralph-happy`, `ralph-gentle`, `ralph-wave`, `ralph-celebrate`, `ralph-sleep`, `ralph-tail`.
 
-`public/ralph/`: `ralph-idle`, `ralph-blink` (~120 ms every 3–5 s), `ralph-talk-1/2/3` (closed/half/open, cycle during TTS), `ralph-listen`, `ralph-think`, `ralph-happy`, `ralph-gentle` (calm concern, never scary), `ralph-wave`, `ralph-celebrate`, `ralph-sleep`, `ralph-tail` — all `.png`.
-
-`public/icons/`: `body-front`, `body-back`, `face-0`…`face-5` (own design, not Wong-Baker), `yes`, `no`, `not-sure`, `complaint-tummy/fever/breathing/other`, `mic`, `play`, `game-bubbles`, `game-firefly`, `game-ralph-says`, `bubble`, `firefly`, `shape-*`, `sticker-1`…`sticker-6` — all `.png`.
+`public/icons/`: `body-front`, `body-back`, `face-0`…`face-5` (own design, not Wong-Baker), `yes`, `no`, `not-sure`, `complaint-tummy/fever/breathing/other`, `mic`, `play`, `game-firefly`, `game-hacker`, `firefly`, `jar`, `sticker-1`…`sticker-6` — all `.png`.
 
 ## Visual style
+**Theming rule:** all colours, fonts, radii, and shadows are tokens in the `@theme` block of `apps/web/src/index.css`. Components use only semantic utilities (`bg-bg`, `bg-surface`, `bg-primary text-on-primary`, `text-ink`, `text-ink-muted`, `bg-yes/no/unsure`, `text-success/warning/danger`, `bg-staff-bg`, `rounded-card`, `rounded-pill`, `shadow-soft`) — never raw palette classes like `bg-pink-500` or hex values. Need a new colour role? Add a token.
+
 - **Kiosk:** warm off-white bg, chunky rounded shapes, 2–3 accents, ≥64 px tap targets, ≥24 px text, one action per screen. Always show text alongside audio. High-contrast mode.
-- **Staff:** clean, neutral, dense; Ralph only as tiny avatar. Colour-blind-safe status colours **plus** text labels.
+- **Staff:** clean, neutral, dense, readable at a glance; Ralph only as tiny avatar. Colour-blind-safe status colours **plus** text labels.
 - Test Hindi + Mandarin rendering on a real iPhone and iPad early.
