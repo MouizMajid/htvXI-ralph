@@ -42,6 +42,11 @@ Each round: one `game_events` row per target/attempt + a summary.
 **Demo panel `?demo=1`:** fast-forward time, trigger check-ins, inject scripted deterioration, reset seed.
 
 ## Art pipeline
+- **Never reference Ralph image paths directly.** Use `<Ralph pose="…" />` (`kiosk/components/Ralph.tsx`); it handles idle bob, blink, talk-frame cycling, and the tail layer. Poses: `idle | talk | listen | think | happy | gentle | wave | celebrate | sleep`.
+- `kiosk/art.ts` is the single manifest: frame list, pose → frame map, tail motion per pose, `SEPARATE_TAIL` toggle.
+- Each frame resolves to `public/ralph/<name>.png` if it exists, else the `<name>.svg` placeholder. Artists add PNGs; no code change. `/art` shows every frame + animated pose with placeholder/✓ status.
+- Placeholders in `public/ralph/*.svg` were generated to the same 1024 canvas layout real art should follow (tail base ≈ (690, 820)).
+
 Code ships with **placeholders using exact final filenames**; hand-drawn art drops in. Character: transparent PNG 1024×1024, icons 512×512, consistent canvas/position across frames.
 
 Ralph the raccoon: round, chunky, big soft eyes in a **soft, cute (not bandit-like)** mask, small round ears, striped fluffy tail; optional tiny stethoscope or tail bandage. Tail is a separate layer (`ralph-tail.png`) animated with Framer Motion: slow sway idle, quick wag happy, curled for gentle.
@@ -51,6 +56,8 @@ Ralph the raccoon: round, chunky, big soft eyes in a **soft, cute (not bandit-li
 `public/icons/`: `body-front`, `body-back`, `face-0`…`face-5` (own design, not Wong-Baker), `yes`, `no`, `not-sure`, `complaint-tummy/fever/breathing/other`, `mic`, `play`, `game-bubbles`, `game-firefly`, `game-ralph-says`, `bubble`, `firefly`, `shape-*`, `sticker-1`…`sticker-6` — all `.png`.
 
 ## Visual style
+**Theming rule:** all colours, fonts, radii, and shadows are tokens in the `@theme` block of `apps/web/src/index.css`. Components use only semantic utilities (`bg-bg`, `bg-surface`, `bg-primary text-on-primary`, `text-ink`, `text-ink-muted`, `bg-yes/no/unsure`, `text-success/warning/danger`, `bg-staff-bg`, `rounded-card`, `rounded-pill`, `shadow-soft`) — never raw palette classes like `bg-pink-500` or hex values. Need a new colour role? Add a token, don't inline it.
+
 - **Kiosk:** warm off-white bg, chunky rounded shapes, 2–3 accents, ≥64 px tap targets, ≥24 px text, one action per screen. Always show text alongside audio. High-contrast mode.
 - **Staff:** clean, neutral, dense; Ralph only as tiny avatar. Colour-blind-safe status colours **plus** text labels.
 - Test Hindi + Mandarin rendering on a real iPhone and iPad early.

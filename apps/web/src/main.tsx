@@ -7,6 +7,7 @@ import './index.css';
 import { KioskApp } from './kiosk/KioskApp';
 import { Queue } from './staff/Queue';
 import { PatientView } from './staff/PatientView';
+import { ArtGallery } from './dev/ArtGallery';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/kiosk/*" element={<KioskApp />} />
           <Route path="/staff" element={<Queue />} />
           <Route path="/staff/visit/:id" element={<PatientView />} />
+          <Route path="/art" element={<ArtGallery />} />
           <Route path="*" element={<Navigate to="/kiosk" replace />} />
         </Routes>
       </BrowserRouter>

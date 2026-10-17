@@ -46,7 +46,8 @@ docs/                pitch, demo script, tracks, privacy, schedule (for humans; 
 - No model IDs, keys, or URLs hard-coded — env only (`.env.example`).
 - Kiosk fails soft: any API error → Ralph says "Oops, let's try tapping!" and the flow continues.
 - Kiosk components stay dumb; flow state in one `useReducer` per session.
-- Placeholder SVG/PNG art uses the exact final filenames so hand-drawn art is a drop-in swap.
+- Ralph is rendered only via `<Ralph pose=… />`; art is a drop-in PNG swap (see `kiosk-ui`). Check art at `/art`.
+- Styling uses only theme tokens from `apps/web/src/index.css` — no raw colours — so restyles are one-file changes.
 - Commit small and often; the team works in parallel.
 
 ## Build order — Tier 1 (must ship)

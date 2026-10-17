@@ -12,7 +12,8 @@
     "build": "pnpm --filter @ralph/web build",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "db:migrate": "pnpm --filter @ralph/api db:migrate",
+    "check": "pnpm --filter @ralph/api check",
+    "db:migrate":"pnpm --filter @ralph/api db:migrate",
     "db:seed": "pnpm --filter @ralph/api db:seed"
   },
   "devDependencies": {

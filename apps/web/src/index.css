@@ -1,12 +1,42 @@
 @import 'tailwindcss';
 
+/*
+ * THEME — the only place to change colours, fonts, and roundness.
+ * Components use these semantic names (bg-primary, text-ink, rounded-card…),
+ * never raw colours like bg-pink-500, so a restyle is a one-file change.
+ */
 @theme {
+  /* fonts */
   --font-sans: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
-  --color-cream: #fdf8f0;
-  --color-ink: #2b2420;
-  --color-berry: #e0607e;
-  --color-leaf: #4caf7a;
-  --color-sky: #4a90d9;
+
+  /* surfaces */
+  --color-bg: #fdf8f0; /* kiosk background (warm off-white) */
+  --color-surface: #ffffff; /* cards, panels */
+  --color-ink: #2b2420; /* main text */
+  --color-ink-muted: #7a6f66; /* secondary text */
+
+  /* kiosk accents */
+  --color-primary: #e0607e; /* main action buttons */
+  --color-on-primary: #ffffff; /* text on primary */
+  --color-secondary: #4a90d9;
+  --color-on-secondary: #ffffff;
+  --color-accent: #f2b84b;
+
+  /* answer buttons */
+  --color-yes: #4caf7a;
+  --color-no: #e0607e;
+  --color-unsure: #b9aea4;
+
+  /* staff status (colour-blind-safe; always paired with a text label) */
+  --color-success: #2e7d5b; /* stable */
+  --color-warning: #c77c02; /* watch */
+  --color-danger: #b3261e; /* escalate / alerts */
+  --color-staff-bg: #f6f7f9;
+
+  /* shape */
+  --radius-card: 1.75rem;
+  --radius-pill: 9999px;
+  --shadow-soft: 0 6px 20px rgb(43 36 32 / 0.08);
 }
 
 html,
@@ -18,5 +48,6 @@ body,
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);
+  background: var(--color-bg);
   -webkit-tap-highlight-color: transparent;
 }
