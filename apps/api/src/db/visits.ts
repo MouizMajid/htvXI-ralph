@@ -96,6 +96,125 @@ const memCheckins = new Map<string, Checkin[]>();
 const memFlags = new Map<string, FlagRow[]>();
 let nextMemId = 1;
 
+function seedInitialMemoryVisits() {
+  if (sql || memVisits.size > 0) return;
+  const now = Date.now();
+  const seeds: {
+    id: string;
+    first_name: string;
+    age_years: number;
+    status: 'waiting' | 'in_room';
+    chief_complaint: Complaint;
+    words: string;
+    nurseId: string;
+    minsAgo: number;
+    alerts: Alert[];
+  }[] = [
+    {
+      id: '00000000-0000-4000-8000-000000000101',
+      first_name: 'Leo',
+      age_years: 6,
+      status: 'in_room',
+      chief_complaint: 'breathing',
+      words: 'Hard to catch my breath and coughing since morning',
+      nurseId: 'nurse-sarah',
+      minsAgo: 6,
+      alerts: [
+        {
+          kind: 'red_flag',
+          key: 'red:breathing_complaint',
+          reason: 'Came in for trouble breathing (complex acute case)',
+        },
+      ],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000102',
+      first_name: 'Maya',
+      age_years: 7,
+      status: 'waiting',
+      chief_complaint: 'tummy',
+      words: 'My tummy hurts around my belly button since lunch',
+      nurseId: 'nurse-sarah',
+      minsAgo: 14,
+      alerts: [],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000103',
+      first_name: 'Ava',
+      age_years: 5,
+      status: 'waiting',
+      chief_complaint: 'fever',
+      words: 'Mild warm forehead, playful and drinking water well',
+      nurseId: 'nurse-marcus',
+      minsAgo: 18,
+      alerts: [],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000104',
+      first_name: 'Noah',
+      age_years: 11,
+      status: 'waiting',
+      chief_complaint: 'other',
+      words: 'Minor wrist bump at soccer practice, no swelling',
+      nurseId: 'nurse-marcus',
+      minsAgo: 9,
+      alerts: [],
+    },
+  ];
+
+  for (const s of seeds) {
+    const arrived = new Date(now - s.minsAgo * 60_000);
+    memVisits.set(s.id, {
+      id: s.id,
+      patient_id: randomUUID(),
+      first_name: s.first_name,
+      age_years: s.age_years,
+      language: 'en',
+      arrived_at: arrived,
+      status: s.status,
+      parent_mode: false,
+      chief_complaint: s.chief_complaint,
+      tree_id: s.chief_complaint === 'tummy' ? 'tummy' : 'general',
+      current_node: null,
+      slots: { assigned_nurse_id: s.nurseId },
+      parent_answers: { onset: 'today', keeps_fluids_down: 'yes' },
+      parent_confirmed_at: arrived,
+      called_in_at: s.status === 'in_room' ? new Date(now - 3 * 60_000) : null,
+      origin: 'seed',
+      assigned_nurse_id: s.nurseId,
+    });
+    visitNurseAssignments.set(s.id, s.nurseId);
+    memTurns.set(s.id, [
+      {
+        id: nextMemId++,
+        at: arrived,
+        node_id: 'what_wrong',
+        speaker: 'child',
+        question: 'Can you tell me what hurts or feels wrong?',
+        text_original: s.words,
+        text_en: s.words,
+        slot: 'anything_else',
+        slot_value: s.words,
+        input: 'text',
+      },
+    ]);
+    memCheckins.set(s.id, []);
+    memFlags.set(
+      s.id,
+      s.alerts.map((a) => ({
+        id: nextMemId++,
+        at: arrived,
+        kind: a.kind,
+        key: a.key,
+        reason: a.reason,
+        acknowledged_at: null,
+      })),
+    );
+  }
+}
+
+seedInitialMemoryVisits();
+
 const VISIT_COLUMNS = `v.id, v.patient_id, p.first_name, p.age_years::float8 AS age_years, p.language,
   v.arrived_at, v.status, v.parent_mode, v.chief_complaint, v.tree_id, v.current_node, v.slots,
   v.parent_answers, v.parent_confirmed_at, v.called_in_at, v.origin`;

@@ -16,6 +16,7 @@ const ActionBody = z.discriminatedUnion('action', [
 
 const NurseStatusBody = z.object({
   status: z.enum(['ready', 'away']),
+  acting_nurse_id: z.string().optional(),
 });
 
 export const staffRoutes: FastifyPluginAsync = async (app) => {
@@ -28,10 +29,16 @@ export const staffRoutes: FastifyPluginAsync = async (app) => {
     return { nurses: workloads };
   });
 
-  // Clock In / Ready vs Away toggle
+  // Clock In / Ready vs Away toggle (restricted to the nurse's own page)
   app.post('/staff/nurses/:id/status', async (req) => {
     const { id } = parse(IdParams, req.params);
-    const { status } = parse(NurseStatusBody, req.body);
+    const { status, acting_nurse_id } = parse(NurseStatusBody, req.body);
+    if (acting_nurse_id && acting_nurse_id !== id) {
+      throw new HttpError(
+        403,
+        `Forbidden: ${acting_nurse_id} cannot clock in or modify ${id}'s page. You can only clock in to your own page.`,
+      );
+    }
     const updated = db.setNurseStatus(id, status);
     if (!updated) throw new HttpError(404, 'nurse not found');
     const workloads = await db.getNurseWorkloads();

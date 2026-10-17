@@ -95,8 +95,11 @@ export const staffApi = {
 
   getNurses: () => api<{ nurses: NurseWorkload[] }>('/staff/nurses'),
 
-  setNurseStatus: (nurseId: string, status: NurseStatus) =>
-    post<{ nurse: Nurse; workloads: NurseWorkload[] }>(`/staff/nurses/${nurseId}/status`, { status }),
+  setNurseStatus: (nurseId: string, status: NurseStatus, actingNurseId?: string) =>
+    post<{ nurse: Nurse; workloads: NurseWorkload[] }>(`/staff/nurses/${nurseId}/status`, {
+      status,
+      acting_nurse_id: actingNurseId ?? nurseId,
+    }),
 
   getPersonalizedPatients: (nurseId: string) =>
     api<PersonalizedNurseQueue>(`/staff/nurses/${nurseId}/patients`),
