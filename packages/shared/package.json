@@ -7,7 +7,8 @@
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts",
-    "./triage/trees/*.json": "./triage/trees/*.json"
+    "./triage/trees/*.json": "./triage/trees/*.json",
+    "./triage/i18n/*.json": "./triage/i18n/*.json"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"

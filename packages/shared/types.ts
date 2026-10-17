@@ -8,7 +8,7 @@ export type ScoreBand = 'stable' | 'watch' | 'escalate';
 export type Speaker = 'ralph' | 'child' | 'parent';
 export type FlagKind = 'red_flag' | 'deterioration' | 'safeguarding' | 'unresponsive';
 export type Feeling = 'better' | 'same' | 'worse' | 'no_response';
-export type GameId = 'bubble_pop' | 'firefly' | 'ralph_says';
+export type GameId = 'bubble_pop' | 'firefly' | 'ralph_says' | 'firefly_tap' | 'cyber_circuit';
 
 export type SlotValue = string | number | null;
 export type SlotMap = Record<string, SlotValue>;

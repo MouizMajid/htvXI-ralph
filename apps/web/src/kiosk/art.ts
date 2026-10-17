@@ -55,17 +55,17 @@ export const BLINKING_POSES: RalphPose[] = ['idle', 'listen', 'think', 'gentle']
  * Set SEPARATE_TAIL = false if the artists draw the tail into each body frame instead.
  */
 export const SEPARATE_TAIL = true;
-export const TAIL_PIVOT = '67% 80%'; // ≈ (690, 820) on the 1024 canvas
+export const TAIL_PIVOT = '33% 77%'; // ≈ (338, 788) on the 1024 canvas (left-side fluffy tail)
 export const TAIL_MOTION: Record<RalphPose, { rotate: number[]; duration: number }> = {
   idle: { rotate: [-4, 4, -4], duration: 3 },
-  talk: { rotate: [-4, 4, -4], duration: 2 },
+  talk: { rotate: [-5, 5, -5], duration: 1.8 },
   listen: { rotate: [-2, 2, -2], duration: 3 },
   think: { rotate: [-2, 2, -2], duration: 4 },
   happy: { rotate: [-12, 12, -12], duration: 0.5 },
-  celebrate: { rotate: [-15, 15, -15], duration: 0.4 },
-  wave: { rotate: [-8, 8, -8], duration: 1 },
-  gentle: { rotate: [20, 22, 20], duration: 4 }, // curled in
-  sleep: { rotate: [18, 18, 18], duration: 4 },
+  celebrate: { rotate: [-16, 16, -16], duration: 0.4 },
+  wave: { rotate: [-9, 9, -9], duration: 0.9 },
+  gentle: { rotate: [-6, -2, -6], duration: 4 },
+  sleep: { rotate: [-8, -6, -8], duration: 4 },
 };
 
 // ---- PNG-if-present, else SVG placeholder ----

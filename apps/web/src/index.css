@@ -33,6 +33,24 @@
   --color-danger: #b3261e; /* escalate / alerts */
   --color-staff-bg: #f6f7f9;
 
+  /* game: Firefly Tap (night sky) */
+  --color-night: #2a3168;
+  --color-night-deep: #141938;
+  --color-star: #c9d2ff;
+  --color-firefly: #fff59a;
+  --color-firefly-glow: #f7d94c;
+
+  /* game: Cyber Circuit (teen hacker terminal) */
+  --color-cyber-bg: #070b18;
+  --color-cyber-panel: #0f172e;
+  --color-cyber-grid: #16244a;
+  --color-cyber-node: #38bdf8;
+  --color-cyber-letter: #c084fc;
+  --color-cyber-ok: #34d399;
+  --color-cyber-error: #fb3b5c;
+  --color-cyber-text: #e0f2fe;
+  --color-cyber-muted: #7c93b8;
+
   /* shape */
   --radius-card: 1.75rem;
   --radius-pill: 9999px;
