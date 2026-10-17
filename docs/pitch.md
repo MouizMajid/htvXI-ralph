@@ -1,54 +1,54 @@
 # RALPH — Pitch, demo, tracks, ethics
 
 ## One-paragraph pitch
-Kids in paediatric ERs and walk-in clinics wait a long time, can't always explain what's wrong, and can quietly get worse while they wait. **RALPH** is a friendly hand-drawn raccoon on a waiting-room tablet who talks with the child (speech-to-text + text-to-speech), asks simple questions that get more specific as the child answers, and plays short games that double as alertness checks. Nurses get a live dashboard: a queue sorted by suggested urgency, a summary in the child's own words, trends over time, red-flag alerts that explain **why**, and a 15-second audio briefing they can listen to while walking the floor. When the doctor walks in, they can say: *"Ralph told me your tummy hurts. Can you show me where?"*
+Kids in paediatric ERs and walk-in clinics wait a long time, often can't explain what's wrong to a stranger in scrubs, and can quietly get worse while they wait. **RALPH** is a friendly hand-drawn raccoon on a waiting-room tablet. He talks with the child in their own language, asks simple questions that get more specific as they answer, keeps them busy with little games, and checks in every few minutes: "How's your tummy now — better, same, or worse?" The nurse gets the child's whole conversation as clear English text, with the child's own words, plus a heads-up if they say they're getting worse. Then the software steps aside: the nurse walks over and says, *"Ralph told me your tummy hurts. Can you tell me more?"*
 
-**Core claim:** RALPH helps the care team catch a child getting worse sooner and turns waiting time into useful clinical information.
+**Core claim:** a child's own words reach the care team before the nurse walks over, and a child who says they're getting worse doesn't go unnoticed.
 
-**Who it's for:** children aged **4–12**. Families with younger children can still use RALPH in *parent mode* (the parent answers; no games), with fewer signals.
+**What RALPH is not:** it doesn't diagnose, triage, or score anyone. Nurses triage; RALPH just makes sure they start with the child's story.
+
+**Who it's for:** children aged **4–12**. Families with younger children can use *parent mode* (the parent answers).
 
 ## Users
 | User | Device | Needs |
 |---|---|---|
 | Child (4–12) | Phone or iPad (waiting-room tablet or parent's phone via QR at check-in) | Friendly, simple, big buttons, short sentences, voice, games |
-| Parent/guardian | Same device | Confirm transcript, add details, pick language |
-| Triage nurse | Laptop or iPad | Prioritized queue, why a kid is flagged, quick audio briefing |
-| Doctor | Dashboard patient view | Child's own words, trend, a conversation opener |
+| Parent/guardian | Same device | Confirm what the child said, add details, pick language |
+| Triage nurse / doctor | Laptop or iPad | The child's conversation in readable English, at-a-glance answers, check-in history, alerts |
 
 ## Demo script (~90 s)
 1. Kiosk: Maya (6) taps "tummy." Ralph asks where; she taps lower belly; says "it hurts really bad and I threw up."
 2. Parent confirms, adds "started this morning, no fever."
-3. Dashboard: Maya appears, suggested level 3, stable.
-4. Demo panel → fast-forward 40 min. Check-in: "worse," face 4. Bubble Pop reaction time 35% slower than her baseline.
-5. Dashboard: Maya jumps up the queue → **escalate**, reasons listed.
-6. Nurse hits ▶ Play briefing (15 s).
-7. Doctor view shows opener: "Ralph told me your tummy hurts. Can you show me where?"
+3. Staff dashboard: Maya appears in the queue. Nurse opens her: the conversation in her own words, an answers table, check-ins so far.
+4. Maya plays Firefly Tap. Demo panel → fast-forward. Ralph checks in between rounds: "worse," face 4.
+5. Dashboard: Maya jumps to the top with **"Getting worse — pain went from 2 → 4; said tummy feels worse."**
+6. Nurse presses **Call in**. Ralph says goodbye and gives Maya a sticker. The nurse walks over: "Ralph told me your tummy hurts. Can you show me where?"
 
-Plus a 30 s **multilingual** moment: a second child checks in in Hindi or Mandarin; Ralph speaks that language; dashboard shows English summary with the original words.
+Plus a 30 s **multilingual** moment: a second child checks in in Hindi or Mandarin; Ralph speaks that language; the dashboard shows the English translation next to the child's original words.
 
 Run the kiosk on a phone/iPad and the dashboard on a laptop side by side.
 
 ## Tracks
 | Track | How RALPH qualifies |
 |---|---|
-| Healthcare Innovation & Well-being | Paediatric triage support + deterioration detection in the waiting room |
-| AI for Social Impact | Helps kids who can't explain symptoms; multilingual access for newcomer families; explainable, human-in-the-loop |
-| PointClickCare — Catch It Early | Small signals (pain trend, slower reactions, missed check-ins) → early, **explained** alerts. Bonus for explaining *why* → our reason strings |
-| MLH Best Use of Gemini API | Transcribe, interpretation, multilingual Ralph, staff summaries, TTS for Ralph + briefings |
-| MLH Best Use of Tiger Data | Relational visits + hypertables for telemetry + continuous aggregates powering live trends and scoring |
-| MLH Best Use of Vultr | Whole app on a Vultr VM with Docker Compose + Caddy |
-| MLH Best Domain Name (GoDaddy Registry) | Custom domain → Vultr deployment (confirm eligible TLDs) |
-| MLH DEV Writing Challenge (post-event) | Write-up: architecture, deterministic safety + LLM design, Tiger caggs |
+| Healthcare Innovation & Well-being | Gives kids a voice in the waiting room and gets their story to the nurse first |
+| AI for Social Impact | Kids who can't explain symptoms to strangers; multilingual access for newcomer families; AI used only for understanding and translating — humans make every clinical call |
+| PointClickCare — Catch It Early | Regular check-ins turn "I feel worse" into an early, **explained** alert ("pain went from 2 → 4") instead of something nobody hears |
+| MLH Best Use of Gemini API | Transcribe (child speech), answer interpretation, translation to English, Ralph's voice (TTS) in 5 languages |
+| MLH Best Use of Tiger Data | Relational visits/conversations + a check-ins hypertable; continuous aggregate for each child's check-in timeline |
+| MLH Best Domain Name (GoDaddy Registry) | Custom domain → Vercel deployment (confirm eligible TLDs) |
+| MLH DEV Writing Challenge (post-event) | Write-up: AI on the child side only, deterministic alerts, serverless on Vercel + Tiger |
 
-Not targeting: Solana (blockchain for kids' health data is a privacy negative).
+Not targeting: Solana (blockchain for kids' health data is a privacy negative); Vultr (we deploy on Vercel — free, automatic HTTPS, preview URL per branch).
 
 ## Privacy, safety, ethics (slide + README section)
 - Synthetic data only; `is_synthetic` on every patient.
 - Real deployment would fall under Ontario's PHIPA: guardian consent, data stored in Canada, retention limits, audit log (`nurse_actions` is the start).
-- Human in the loop: nurse confirms every level; overrides logged.
-- No diagnosis, no medical advice to families.
+- No diagnosis, no triage, no medical advice. The staff side has no AI — nurses read the child's words and decide.
+- Alerts come from simple, explainable rules in code, never from the AI.
+- Games are just for fun — we make no claims about measuring health from play.
 - Child-safe AI: on-topic only, no open chat.
-- **Safeguarding:** two independent detectors (deterministic phrase list in 5 languages + LLM signal), flag if either fires. Ralph gives one fixed calm line and never probes. The flag is visible only to staff — never on the kiosk, parent view, or audio briefing. We bias toward false positives.
+- **Safeguarding:** two independent detectors (phrase list in 5 languages + AI signal), flag if either fires. Ralph gives one fixed calm line and never probes. The flag is visible only to staff — never on the kiosk or parent view. We bias toward false positives.
 - Accessibility: tap fallback for every question, on-screen text with all audio, high-contrast mode, large targets.
-- Bias: kids' speech + accents → low-confidence path falls back to taps and parent; no penalty for being hard to transcribe.
-- Triage rules are team-defined demo rules; real use needs clinician-validated criteria.
+- Bias: kids' speech + accents → low-confidence path falls back to taps and parent; no penalty for being hard to transcribe. Translations keep the child's phrasing.
+- Alert rules are team-defined demo rules; real use needs clinician-validated criteria.

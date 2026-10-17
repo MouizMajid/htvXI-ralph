@@ -8,5 +8,5 @@ dist/
 coverage/
 CLAUDE.local.md
 .claude/settings.local.json
-# generated dynamic TTS (fixed-line cache in apps/web/public/audio/cache IS committed)
-apps/api/tts-cache/
+# Vercel CLI link
+.vercel/

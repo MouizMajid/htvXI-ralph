@@ -6,7 +6,6 @@ const EnvSchema = z.object({
   GEMINI_STT_MODEL: z.string().default(''),
   GEMINI_TTS_MODEL: z.string().default(''),
   RALPH_VOICE: z.string().default(''),
-  NURSE_VOICE: z.string().default(''),
   DATABASE_URL: z.string().default(''),
   PUBLIC_BASE_URL: z.string().default('http://localhost:5173'),
   PORT: z.coerce.number().int().default(3001),

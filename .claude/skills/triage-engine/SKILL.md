@@ -1,11 +1,12 @@
 ---
 name: triage-engine
-description: RALPH triage logic — question tree JSON format, per-turn Gemini interpretation contract, red-flag rules, suggested level, deterioration score, and safeguarding detection. Use when working in packages/shared/triage, apps/api/src/triage, apps/api/src/scoring, or anything deciding urgency or alerts.
+description: RALPH conversation + alert logic — question tree JSON format, per-turn Gemini interpretation contract, red-flag alerts, check-in "getting worse" alerts, and safeguarding detection. Use when working in packages/shared/triage, apps/api/src/triage, or anything that raises a staff alert.
 ---
 
 # Triage engine
 
-Golden rule: **code decides, the LLM interprets.** Everything here is pure, deterministic, and unit-tested with Vitest.
+RALPH does **not** triage. It gathers the child's story in a structured way and raises a few plain-language alerts. **The nurse triages, in person.**
+Golden rule: **code decides alerts, the LLM only interprets and translates.** Everything here is pure, deterministic, and unit-tested with Vitest.
 
 ## Tree format (`packages/shared/triage/trees/*.json`)
 ```json
@@ -19,13 +20,6 @@ Golden rule: **code decides, the LLM interprets.** Everything here is pure, dete
       "answer_type": "body_map",
       "slot": "pain_location",
       "next": [{ "default": "how_long" }]
-    },
-    "how_long": {
-      "ask": "Did it start today, or before today?",
-      "answer_type": "choice",
-      "options": ["today", "before today", "not sure"],
-      "slot": "onset_child",
-      "next": [{ "default": "throw_up" }]
     },
     "throw_up": {
       "ask": "Have you thrown up?",
@@ -51,53 +45,46 @@ Output JSON (Zod-validated; retry once, then fall back to tap options):
   confidence: number,                    // 0–1
   needs_clarification: boolean,          // true → show tap options / ask parent
   ralph_reply: string,                   // ≤ 20 words, kind, simple, session language
-  extra_symptoms: string[],              // anything else the child mentioned, normalized
+  text_en: string,                       // English translation of the child's words (= original if en)
+  extra_symptoms: string[],              // anything else the child mentioned, normalized, English
   safeguarding_concern: boolean,         // one of two safeguarding signals — see below
   off_topic: boolean
 }
 ```
-Then **code** writes the slot, runs the safeguarding check, evaluates red-flag rules, and picks the next node.
+Then **code** writes the slot, runs the safeguarding check, evaluates alert rules, and picks the next node.
 
-## Red flags (team-defined demo rules, `packages/shared/triage/rules.ts`)
-Pure functions over slot map + check-ins + game metrics:
+## Alerts (team-defined demo rules, `packages/shared/triage/rules.ts`)
+No suggested level, no numeric score. Each alert is `{ kind, reason }` with a plain-English reason a nurse reads in two seconds. Pure functions over the slot map + check-ins.
+
+**Red flags** (`kind: 'red_flag'`) — from answers:
 - Trouble breathing / "can't breathe" / working hard to breathe
-- Very sleepy, hard to wake, or not responding to two check-ins in a row
-- Vomiting repeatedly + no fluids kept down / no pee for a long time
-- Severe pain (faces 5) or pain moving to lower-right tummy
+- Very sleepy or hard to wake (parent-reported)
+- Vomiting many times (team threshold) + can't keep fluids down / no pee for a long time
+- Worst pain face (5)
 - Fever in a very young child (age threshold set by team)
 - Rash + fever together
-- Safeguarding concern (private flag, separate channel)
 
-## Suggested level
-Rules map to a 1–5 level modelled loosely on PaedsCTAS. UI label: **"Suggested level 3 — nurse to confirm."** README must note real use requires clinician-validated criteria.
+**Getting worse** (`kind: 'deterioration'`) — from check-ins:
+- Pain face up ≥ 2 from first report → "Pain went from 2 → 4"
+- Said "worse" at two check-ins in a row → "Said tummy feels worse twice"
+- New red-flag symptom mentioned at a check-in → "New: says it's hard to breathe"
 
-## Deterioration score (`apps/api/src/scoring`)
-Recomputed on every check-in and game round. Every point carries a reason string.
+**Not responding** (`kind: 'unresponsive'`): no answer to 2 check-ins in a row → "Didn't answer Ralph's last 2 check-ins".
 
-| Signal | Points | Reason example |
-|---|---|---|
-| Faces/pain up ≥ 2 vs first report | +2 | "Pain went from 2 → 4" |
-| Check-in "worse" | +1 | "Said tummy feels worse" |
-| New red-flag symptom | ALERT | "New: says it's hard to breathe" |
-| Reaction time > 30% slower than own baseline | +2 | "Reaction time down 35%" |
-| Reaction time > 50% slower | +3 (replaces +2) | |
-| Game accuracy drop > 25% | +1 | "Missing more targets" |
-| No response to 2 check-ins in a row | +2 + ALERT | "Not responding to Ralph" |
-| Waited longer than target for suggested level | +1 | "Waiting 95 min (target 60)" |
+**Games produce no alerts.** They are entertainment only.
 
-Bands: **0–2 stable**, **3–4 watch**, **5+ escalate** (moves up queue, dashboard alert + sound). Baseline = child's first game round.
-**Parent mode (under 4):** no games, so score uses check-ins, red flags, and wait time only. Patient view should show "Limited signals — parent mode" so nobody reads a low score as reassurance.
+Queue order on the dashboard: children with unacknowledged alerts first, then by arrival time.
 
 ## Safeguarding (`packages/shared/triage/safeguarding.ts`)
 Two independent signals; **flag if either fires** (OR, never AND):
-1. **Deterministic phrase check (code):** normalized transcript (lowercase, strip punctuation; for `zh-CN` match on characters, no word boundaries) matched against a curated phrase list per language in `packages/shared/triage/i18n/safeguarding/{lang}.json` — e.g. "hits me", "hurts me", "scared to go home", "touched me", "not safe". Phrase lists reviewed by a speaker of each language where possible. Runs on every free-speech transcript and on parent free-text.
+1. **Deterministic phrase check (code):** normalized transcript (lowercase, strip punctuation; for `zh-CN` match on characters, no word boundaries) matched against a curated phrase list per language in `packages/shared/triage/i18n/safeguarding/{lang}.json` — e.g. "hits me", "hurts me", "scared to go home", "touched me", "not safe". Lists reviewed by a speaker of each language where possible. Runs on every free-speech transcript and on parent free text.
 2. **LLM signal:** `safeguarding_concern: true` from the interpretation call.
 
-Also treat as a fired signal: the interpretation call failing Zod validation twice on a transcript the phrase check already found borderline (fail toward flagging).
+If the interpretation call fails validation twice on a transcript the phrase check already found borderline, treat it as fired (fail toward flagging).
 
 When it fires:
-- Ralph says one **fixed, pre-translated** line — never LLM-written: "Thank you for telling me. A nurse will come talk with you." Stored in `packages/shared/triage/i18n/{lang}.json` as `safeguarding_reply`, with **TTS pre-generated per language** at build time.
-- Insert `flags` row with `kind = 'safeguarding'` and reason = which signal(s) fired + the triggering phrase. Emit `flag:new` to staff only.
-- No follow-up questions about it. The tree continues normally after the line.
-- Never shown on kiosk or parent screens, never in the parent-confirm transcript view, never in the audio briefing. Visible only on the staff patient view in a distinct style.
-- False positives are acceptable; false negatives are not. Tests must cover each language with at least one positive and one benign phrase (e.g. "my brother hit the ball").
+- Ralph says one **fixed, pre-translated** line — never LLM-written: "Thank you for telling me. A nurse will come talk with you." (`safeguarding_reply` in `packages/shared/triage/i18n/{lang}.json`, TTS pre-generated per language.)
+- Insert a `flags` row with `kind = 'safeguarding'`, reason = which signal(s) fired + the triggering phrase.
+- No follow-up questions. The tree continues normally after the line.
+- Never shown on kiosk or parent screens, never in the parent-confirm view. Visible only on the staff patient view in a distinct style.
+- False positives are acceptable; false negatives are not. Tests cover each language with a positive and a benign phrase (e.g. "my brother hit the ball").
