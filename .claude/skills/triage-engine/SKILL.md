@@ -5,6 +5,15 @@ description: RALPH conversation + alert logic — question tree JSON format, per
 
 # Triage engine
 
+## Code map (`packages/shared`, all exported from `@ralph/shared`)
+- `triage/trees.ts` — `TREES` (`tummy`, `general`), `treeForComplaint()` (Tier 1: fever/breathing/other → `general`), `getNode()`, `nextNodeId()`, `normalizeAnswer(node, value)` (validates taps + interpreted voice; returns null if invalid; clamps "N or more").
+- `triage/rules.ts` — `evaluateAlerts(AlertInput)` → `Alert[]` (red flags, getting worse, not responding); thresholds in `RULES`; `BREATHING_PHRASES`.
+- `triage/safeguarding.ts` — `detectSafeguarding()` (phrase lists OR LLM), `safeguardingAlert()`.
+- `triage/text.ts` — `normalizeText()`, `findPhrase()` (whole words; substrings for zh-CN).
+- `schemas.ts` — `ParentAnswersSchema`, `CheckinSchema`, `InterpretationSchema` (with `text_en`), `CreateVisitBodySchema`; `types.ts` — `COMPLAINTS`, `BODY_REGIONS`, `YES_NO`, `Alert`.
+- `triage/fixtures/maya.ts` — the demo scenario; reuse it in API tests and the seed.
+- **Alert `key`s are stable** (`red:no_pee`, `det:pain_up:4`, `unresp:2`, `safeguarding:<phrase>`): the API re-runs `evaluateAlerts` after every change and inserts only keys the visit doesn't already have.
+
 RALPH does **not** triage. It gathers the child's story in a structured way and raises a few plain-language alerts. **The nurse triages, in person.**
 Golden rule: **code decides alerts, the LLM only interprets and translates.** Everything here is pure, deterministic, and unit-tested with Vitest.
 
