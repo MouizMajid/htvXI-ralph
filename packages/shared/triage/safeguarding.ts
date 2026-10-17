@@ -1,4 +1,4 @@
-import type { Lang } from '../types';
+import type { Lang } from '../types.js';
 
 /**
  * Deterministic safeguarding phrase check — one of two signals (the other is the

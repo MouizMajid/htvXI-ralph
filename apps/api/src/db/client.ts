@@ -1,5 +1,5 @@
 import postgres from 'postgres';
-import { env } from '../env';
+import { env } from '../env.js';
 
 /**
  * null until DATABASE_URL is set, so the API still boots for frontend work.

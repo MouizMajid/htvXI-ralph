@@ -3,16 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
-  "types": "./index.ts",
   "exports": {
-    ".": "./index.ts",
-    "./triage/trees/*.json": "./triage/trees/*.json"
+    ".": {
+      "types": "./index.ts",
+      "source": "./index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
+    "prepare": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
   }
 }
