@@ -1,15 +1,25 @@
 import { useEffect, useSyncExternalStore } from 'react';
-import { api } from './api';
+import { ApiError, api } from './api';
 
 /**
- * Ralph's voice. Plays Gemini TTS (generated once, cached on the server); if it isn't ready
- * within FAST_MS — or fails — Ralph uses the browser's built-in voice so the child never waits.
- * The slow clip still finishes on the server and is instant next time.
+ * Ralph's voice. Plays Gemini TTS (pre-generated with `pnpm tts:warm`, cached on the server).
+ * A line the server doesn't have comes back 404 at once and Ralph uses the browser's built-in
+ * voice; so does a clip that fails or takes too long.
+ *
+ * One voice at a time: fixed lines (questions, "Thank you!") are all pre-generated, so the
+ * question flow stays in Ralph's Gemini voice. Live lines (chat replies) can only be Gemini when
+ * the server generates on demand (TTS_ON_DEMAND); once it says it doesn't, every live line uses
+ * the browser voice, so a chat doesn't flip between the two.
  * No mute: the tablet's volume handles sound, and check-ins can't be switched off.
  */
 
-/** Wait this long for Gemini audio before using the browser voice instead. */
-const FAST_MS = 1500;
+/** Wait this long for a pre-generated clip before using the browser voice instead. */
+const CACHED_MS = 4000;
+/** Live generation takes ~4 s (more on a busy day); wait this long for it. */
+const LIVE_MS = 9000;
+
+/** Can the server make new clips on demand? null until it tells us. */
+let liveVoice: boolean | null = null;
 
 // ---- "is Ralph talking?" (drives his mouth animation) ----
 let speaking = false;
@@ -47,8 +57,14 @@ const urls = new Map<string, Promise<string>>();
 function ttsUrl(text: string): Promise<string> {
   let p = urls.get(text);
   if (!p) {
-    p = api<{ url: string }>('/tts', { method: 'POST', body: JSON.stringify({ text }) }).then((r) => r.url);
-    p.catch(() => urls.delete(text)); // let a later attempt retry
+    p = api<{ url: string; cached: boolean }>('/tts', { method: 'POST', body: JSON.stringify({ text }) }).then((r) => {
+      if (!r.cached) liveVoice = true;
+      return r.url;
+    });
+    p.catch((err) => {
+      urls.delete(text); // let a later attempt retry
+      if (err instanceof ApiError && err.status === 404 && err.message.includes('"on_demand":false')) liveVoice = false;
+    });
     urls.set(text, p);
   }
   return p;
@@ -85,8 +101,11 @@ function browserSpeak(text: string, lang: string, done: () => void): () => void 
 
 let cancelCurrent: (() => void) | null = null;
 
-/** Ralph says `text`. Calls `onEnd` once when he's finished. Returns a cancel function (no onEnd). */
-export function speak(text: string, lang: string, onEnd: () => void): () => void {
+/**
+ * Ralph says `text`. Calls `onEnd` once when he's finished. Returns a cancel function (no onEnd).
+ * `live`: a line made up on the spot (chat reply) rather than a fixed, pre-generated one.
+ */
+export function speak(text: string, lang: string, onEnd: () => void, opts: { live?: boolean } = {}): () => void {
   cancelCurrent?.();
   let finished = false;
   let usingBrowser = false;
@@ -103,26 +122,28 @@ export function speak(text: string, lang: string, onEnd: () => void): () => void
   const useBrowser = () => {
     if (finished || usingBrowser) return;
     usingBrowser = true;
+    clearTimeout(slow);
     stop = browserSpeak(text, lang, finish);
   };
-  const slow = setTimeout(useBrowser, FAST_MS);
-
+  const slow = setTimeout(useBrowser, opts.live ? LIVE_MS : CACHED_MS);
   setSpeaking(true);
-  ttsUrl(text)
-    .then((url) => {
-      if (finished || usingBrowser) return;
-      clearTimeout(slow);
-      const a = audio();
-      a.onended = finish;
-      a.onerror = useBrowser;
-      a.src = url;
-      stop = () => a.pause();
-      return a.play();
-    })
-    .catch(() => {
-      clearTimeout(slow);
-      useBrowser();
-    });
+
+  if (opts.live && liveVoice === false) {
+    useBrowser(); // the server can't make this line; keep the whole chat in one voice
+  } else {
+    ttsUrl(text)
+      .then((url) => {
+        if (finished || usingBrowser) return;
+        clearTimeout(slow);
+        const a = audio();
+        a.onended = finish;
+        a.onerror = useBrowser;
+        a.src = url;
+        stop = () => a.pause();
+        return a.play();
+      })
+      .catch(useBrowser);
+  }
 
   const cancel = () => {
     if (finished) return;

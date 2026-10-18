@@ -63,7 +63,8 @@ export interface NodeView {
 }
 
 /** Which fixed line Ralph says after an answer; the kiosk maps it to translated text + audio. */
-export type ReplyKey = 'thanks' | 'safeguarding_reply' | 'try_tapping';
+/** What Ralph says after an answer. `not_heard`: nothing usable was heard (spoken answers only). */
+export type ReplyKey = 'thanks' | 'safeguarding_reply' | 'try_tapping' | 'not_heard';
 
 /** Result of a spoken answer (POST /visits/:id/turns/audio). Never includes alerts. */
 export interface SpokenAnswerResponse {

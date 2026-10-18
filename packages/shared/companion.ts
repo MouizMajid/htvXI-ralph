@@ -31,6 +31,13 @@ export function soundsWorse(text: string): boolean {
   return WORSE.some((w) => norm.includes(` ${w} `)) || /\bnot (good|great|better|ok|okay|fine)\b/.test(norm);
 }
 
+const UNWELL = /\b(hurts?|hurting|pain|sick|ache|aches|throw|threw|vomit\w*|blood|bleeding|scared|sad|cry\w*|dizzy|cough\w*|fever|ouch\w*)\b/;
+
+/** Talk about symptoms or feelings (keyword match) — picks a gentle offline reply. */
+export function soundsUnwell(text: string): boolean {
+  return UNWELL.test(normPhrase(text));
+}
+
 function soundsBetter(text: string): boolean {
   const norm = ` ${normPhrase(text)} `;
   return !soundsWorse(text) && BETTER.some((w) => norm.includes(` ${w} `));
@@ -75,6 +82,10 @@ export function fallbackReply(childText: string, turnIndex: number): { reply: st
   const topic = FALLBACK_TOPICS[turnIndex % FALLBACK_TOPICS.length]!;
   if (soundsWorse(childText)) {
     return { reply: "I'm sorry you feel that way. Let's tell the nurse with a quick tap.", wantsQuiet: false };
+  }
+  // Never a cheery "Ooh, cool!" to talk about feeling unwell.
+  if (soundsUnwell(childText)) {
+    return { reply: "I'm sorry you don't feel good. The nurse will see what you told me.", wantsQuiet: false };
   }
   if (soundsBetter(childText)) return { reply: `Yay, I'm so glad! ${topic}`, wantsQuiet: false };
   return { reply: `${REACTIONS[turnIndex % REACTIONS.length]} ${topic}`, wantsQuiet: false };

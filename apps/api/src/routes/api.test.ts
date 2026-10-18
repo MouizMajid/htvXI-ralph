@@ -200,14 +200,16 @@ describe.skipIf(!process.env.DATABASE_URL)('visit API (Tiger)', () => {
     it("stores the chat as the child's words and Ralph's reply; records no feeling", async () => {
       const res = await chat('I like dinosaurs, my favourite is the T-rex');
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ reply: null, wants_quiet: false, offer_checkin: false }); // no Gemini → kiosk fallback
+      // No Gemini in tests → the offline reply, chosen on the server so the nurse sees it too.
+      expect(res.body).toEqual({ reply: expect.stringMatching(/\?$/), wants_quiet: false, offer_checkin: false });
       expectNoAlertLeak(res.raw);
       const { body } = await call('GET', `/staff/visits/${id}`);
-      expect(body.turns.at(-1)).toMatchObject({
+      expect(body.turns.at(-2)).toMatchObject({
         node_id: 'companion',
         speaker: 'child',
         text_en: 'I like dinosaurs, my favourite is the T-rex',
       });
+      expect(body.turns.at(-1)).toMatchObject({ speaker: 'ralph', text_original: res.body.reply });
       expect(body.checkins).toEqual([]);
     });
 
@@ -219,10 +221,23 @@ describe.skipIf(!process.env.DATABASE_URL)('visit API (Tiger)', () => {
       expect(body.alerts).toEqual([]);
     });
 
-    it('worrying words in chat raise a red flag (code decides)', async () => {
-      await chat('my chest hurts a bit');
+    it('worrying words in chat raise a red flag (code decides); Ralph gives the fixed reply, not chit-chat', async () => {
+      const res = await chat('my chest really hurts a bit');
+      expect(res.body).toEqual({
+        reply: 'Thank you for telling me. I am letting the nurse know right now.',
+        wants_quiet: false,
+        offer_checkin: true,
+      });
+      expectNoAlertLeak(res.raw);
       const { body } = await call('GET', `/staff/visits/${id}`);
       expect(body.alerts.map((a: any) => a.key)).toEqual(['red:said:chest_pain']);
+    });
+
+    it('"I threw up blood" is never answered with a fun topic', async () => {
+      const res = await chat('I threw up blood');
+      expect(res.body.reply).toBe('Thank you for telling me. I am letting the nurse know right now.');
+      const { body } = await call('GET', `/staff/visits/${id}`);
+      expect(body.alerts.map((a: any) => a.key)).toContain('red:said:blood');
     });
 
     it('a disclosure in chat gets the fixed reply and a staff-only alert', async () => {

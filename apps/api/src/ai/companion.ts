@@ -1,6 +1,6 @@
 import { CompanionAiSchema, type CompanionAi, type CompanionTurnBody } from '@ralph/shared';
 import { env } from '../env.js';
-import { gemini } from './gemini.js';
+import { gemini, withinBudget } from './gemini.js';
 import { companionPersona } from './prompts.js';
 
 const LANG_NAMES: Record<string, string> = {
@@ -12,8 +12,8 @@ const LANG_NAMES: Record<string, string> = {
 };
 
 /**
- * One companion turn via Gemini. Returns null when Gemini isn't configured or
- * the response fails Zod twice — caller falls back to the deterministic reply.
+ * One companion turn via Gemini. Returns null when Gemini isn't configured, fails, is slower
+ * than TEXT_BUDGET_MS, or fails Zod twice — caller falls back to the deterministic reply.
  */
 export async function companionReply(body: CompanionTurnBody): Promise<CompanionAi | null> {
   if (!gemini || !env.GEMINI_MODEL) return null;
@@ -35,27 +35,22 @@ export async function companionReply(body: CompanionTurnBody): Promise<Companion
     },
   ];
 
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const client = gemini;
+  return withinBudget('companion', async () => {
+    const res = await client.models.generateContent({
+      model: env.GEMINI_MODEL,
+      contents,
+      config: {
+        systemInstruction: companionPersona(body.age_years, LANG_NAMES[body.language] ?? 'English', body.first_name),
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+      },
+    });
     try {
-      const res = await gemini.models.generateContent({
-        model: env.GEMINI_MODEL,
-        contents,
-        config: {
-          systemInstruction: companionPersona(
-            body.age_years,
-            LANG_NAMES[body.language] ?? 'English',
-            body.first_name,
-          ),
-          temperature: 0.7,
-          responseMimeType: 'application/json',
-        },
-      });
       const parsed = CompanionAiSchema.safeParse(JSON.parse(res.text ?? ''));
-      if (parsed.success) return parsed.data;
-    } catch (err) {
-      // Retry once, then fall back. Log it: Gemini outages (e.g. 503 high demand) were invisible.
-      console.warn(`companion: Gemini attempt ${attempt + 1} failed:`, (err as Error).message.slice(0, 200));
+      return parsed.success ? parsed.data : null;
+    } catch {
+      return null;
     }
-  }
-  return null;
+  });
 }

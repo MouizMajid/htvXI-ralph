@@ -1,1 +1,4 @@
-{ "safeguarding_reply": "Gracias por contármelo. Una enfermera vendrá a hablar contigo." }
+{
+  "safeguarding_reply": "Gracias por contármelo. Una enfermera vendrá a hablar contigo.",
+  "red_flag_reply": "Gracias por contármelo. Le estoy avisando a la enfermera ahora mismo."
+}

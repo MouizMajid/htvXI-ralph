@@ -25,6 +25,11 @@ describe('wantsQuiet / fallbackReply', () => {
   it('points a "worse" message to the tap check-in', () => {
     expect(fallbackReply('I feel worse', 0).reply).toMatch(/nurse/);
   });
+  it('is never cheery about symptoms', () => {
+    expect(fallbackReply('I threw up blood', 0).reply).not.toMatch(/cool|fun|awesome|wow/i);
+    expect(fallbackReply('my tummy hurts', 3).reply).toMatch(/nurse/);
+    expect(fallbackReply('I like hot dogs', 0).reply).not.toMatch(/nurse/);
+  });
   it('goes quiet on bye', () => {
     expect(fallbackReply('bye', 0)).toMatchObject({ wantsQuiet: true });
   });

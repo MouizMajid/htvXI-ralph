@@ -7,12 +7,18 @@ import type { Interpretation } from '@ralph/shared';
 const fake = vi.hoisted(() => ({
   transcript: null as string | null,
   interpretation: null as Interpretation | null,
+  interpretCalls: 0,
 }));
 vi.mock('../ai/voice.js', async (orig) => ({
   ...(await orig<typeof import('../ai/voice.js')>()),
   transcribe: async () => fake.transcript,
 }));
-vi.mock('../ai/interpret.js', () => ({ interpretTurn: async () => fake.interpretation }));
+vi.mock('../ai/interpret.js', () => ({
+  interpretTurn: async () => {
+    fake.interpretCalls++;
+    return fake.interpretation;
+  },
+}));
 
 const { buildApp } = await import('../build-app.js');
 const { sql } = await import('../db/client.js');
@@ -77,28 +83,38 @@ describe.skipIf(!process.env.DATABASE_URL)('voice (Tiger, Gemini stubbed)', () =
     expect((await app.inject({ method: 'GET', url: `/api/tts/${'a'.repeat(64)}` })).statusCode).toBe(404);
   });
 
-  it('a clear spoken answer is validated and saved like a tap, with the words', async () => {
+  it('a plain answer is read by code — no Gemini needed — and saved like a tap, with the words', async () => {
     const id = await newTummyVisit('TEST-Voice1');
     fake.transcript = 'my belly button hurts';
-    fake.interpretation = interp({ slot_value: 'belly_button', text_en: 'my belly button hurts' });
+    fake.interpretation = null; // Gemini down: doesn't matter for plain words
+    fake.interpretCalls = 0;
     const res = await speak(id, 'where');
-    expect(res.body).toMatchObject({ heard: 'my belly button hurts', accepted: true, reply: 'thanks', line: 'Oh no, thank you for telling me!' });
+    // line null: Ralph says the pre-generated "Thank you!" (no live voice on this server)
+    expect(res.body).toMatchObject({ heard: 'my belly button hurts', accepted: true, reply: 'thanks', line: null });
     expect(res.body.next.id).toBe('pain_face');
+    expect(fake.interpretCalls).toBe(0);
     const v = await staffView(id);
     expect(v.visit.slots.pain_location).toBe('belly_button');
     expect(v.turns.at(-1)).toMatchObject({ input: 'voice', text_original: 'my belly button hurts', slot_value: 'belly_button' });
+
+    fake.transcript = 'a lot';
+    expect((await speak(id, 'pain_face')).body).toMatchObject({ accepted: true, value: 4 });
+    expect(fake.interpretCalls).toBe(0);
   });
 
-  it('an invalid value from Gemini is rejected by code; the words are kept for the nurse', async () => {
+  it('harder phrasing goes to Gemini, whose value is still checked by code', async () => {
     const id = await newTummyVisit('TEST-Voice2');
-    fake.transcript = 'my elbow';
+    fake.transcript = 'near my funny bone';
     fake.interpretation = interp({ slot_value: 'elbow' }); // not a body region
     const res = await speak(id, 'where');
     expect(res.body).toMatchObject({ accepted: false, reply: 'try_tapping', line: null });
     expect(res.body.next.id).toBe('where'); // same question again
     const v = await staffView(id);
     expect(v.visit.slots.pain_location).toBeUndefined();
-    expect(v.turns.at(-1)).toMatchObject({ node_id: 'where', input: 'voice', text_original: 'my elbow', slot_value: null });
+    expect(v.turns.at(-1)).toMatchObject({ node_id: 'where', input: 'voice', text_original: 'near my funny bone', slot_value: null });
+
+    fake.interpretation = interp({ slot_value: 'lower_right_tummy', text_en: 'near my funny bone' });
+    expect((await speak(id, 'where')).body).toMatchObject({ accepted: true, value: 'lower_right_tummy' });
   });
 
   it('low confidence or unclear → tap instead', async () => {
@@ -113,7 +129,7 @@ describe.skipIf(!process.env.DATABASE_URL)('voice (Tiger, Gemini stubbed)', () =
   it('nothing heard, or Gemini down → tap instead, nothing saved', async () => {
     const id = await newTummyVisit('TEST-Voice4');
     fake.transcript = null;
-    expect((await speak(id, 'where')).body).toEqual({ heard: null, accepted: false, value: null, next: expect.any(Object), reply: 'try_tapping', line: null });
+    expect((await speak(id, 'where')).body).toEqual({ heard: null, accepted: false, value: null, next: expect.any(Object), reply: 'not_heard', line: null });
     fake.transcript = 'my tummy';
     fake.interpretation = null;
     expect((await speak(id, 'where')).body).toMatchObject({ heard: 'my tummy', accepted: false });

@@ -1,6 +1,6 @@
 import { InterpretationSchema, type Interpretation, type Lang, type TreeNode } from '@ralph/shared';
 import { env } from '../env.js';
-import { gemini } from './gemini.js';
+import { gemini, withinBudget } from './gemini.js';
 import { allowedValuesText, interpretationPrompt } from './prompts.js';
 
 const LANG_NAMES: Record<Lang, string> = {
@@ -12,8 +12,9 @@ const LANG_NAMES: Record<Lang, string> = {
 };
 
 /**
- * One spoken answer → Gemini's reading of it (Zod-validated; retry once). null when Gemini is
- * unavailable or returns junk twice — the caller then asks the child to tap instead.
+ * One spoken answer → Gemini's reading of it (Zod-validated; retried once on bad JSON, all within
+ * TEXT_BUDGET_MS). null when Gemini is unavailable, slow, or returns junk — the caller then asks
+ * the child to tap instead.
  */
 export async function interpretTurn(p: {
   node: TreeNode;
@@ -31,19 +32,22 @@ export async function interpretTurn(p: {
     transcript: p.transcript,
   });
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const res = await gemini.models.generateContent({
-        model: env.GEMINI_MODEL,
-        contents: prompt,
-        config: { temperature: 0.2, responseMimeType: 'application/json' },
-      });
-      const parsed = InterpretationSchema.safeParse(JSON.parse(res.text ?? ''));
-      if (parsed.success) return parsed.data;
-      console.warn('interpret: invalid JSON shape:', parsed.error.issues[0]?.message);
-    } catch (err) {
-      console.warn(`interpret: attempt ${attempt + 1} failed:`, (err as Error).message.slice(0, 200));
-    }
+  const client = gemini;
+  return withinBudget('interpret', async () => {
+    const res = await client.models.generateContent({
+      model: env.GEMINI_MODEL,
+      contents: prompt,
+      config: { temperature: 0.2, responseMimeType: 'application/json' },
+    });
+    return parseJson(res.text);
+  });
+}
+
+function parseJson(text: string | undefined): Interpretation | null {
+  try {
+    const parsed = InterpretationSchema.safeParse(JSON.parse(text ?? ''));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
   }
-  return null;
 }

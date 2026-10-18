@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Checkin } from '../schemas.js';
-import { evaluateAlerts, type AlertInput } from './rules.js';
+import { evaluateAlerts, worryingWords, type AlertInput } from './rules.js';
 import { MAYA } from './fixtures/maya.js';
 
 const at = (min: number) => new Date(Date.UTC(2026, 9, 17, 10, min));
@@ -44,6 +44,25 @@ describe('red flags', () => {
     ]);
     expect(keys({ child_texts_en: ["I can't see the TV from here"] })).toEqual(['red:said:vision']);
     expect(keys({ child_texts_en: ['I like my sleepy cat', 'the chest in the game had gold'] })).toEqual([]);
+  });
+
+  it('phrases still match with a few words in between, but not when negated', () => {
+    expect(keys({ child_texts_en: ['my chest really hurts and I cant breathe'] })).toEqual([
+      'red:breathing_words',
+      'red:said:chest_pain',
+    ]);
+    expect(keys({ child_texts_en: ['I threw up some blood'] })).toEqual(['red:said:blood']);
+    expect(keys({ child_texts_en: ['I passed out at school', 'I hit my head on the slide'] })).toEqual([
+      'red:said:fainted',
+      'red:said:head_injury',
+    ]);
+    expect(keys({ child_texts_en: ['my chest does not hurt', 'I did not throw up blood'] })).toEqual([]);
+  });
+
+  it('worryingWords checks one chat message', () => {
+    expect(worryingWords('I threw up blood')).toBe('Mentions blood ("threw up blood")');
+    expect(worryingWords('my throat feels really tight')).toMatch(/swollen or tight/);
+    expect(worryingWords('I like dinosaurs')).toBeNull();
   });
 
   it('worst pain face, from the tree or a check-in', () => {
