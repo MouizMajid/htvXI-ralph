@@ -30,7 +30,7 @@ export function Shell({ pose, line, subline, error, big, onReplay, children }: S
         <Ralph pose={speaking ? 'talk' : pose} className={big ? 'size-56 sm:size-72' : 'size-28 shrink-0 sm:size-36'} />
         {line && (
           <div
-            className={`relative rounded-card bg-surface px-5 py-4 text-2xl font-bold leading-snug shadow-soft ${big ? 'text-center' : ''}`}
+            className={`relative rounded-card bg-surface px-5 py-4 font-display text-2xl font-bold leading-snug shadow-soft ${big ? 'text-center' : ''}`}
           >
             {line}
             {onReplay && (

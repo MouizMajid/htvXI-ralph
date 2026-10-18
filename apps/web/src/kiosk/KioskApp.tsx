@@ -135,7 +135,7 @@ function KioskFlow() {
   const subline = s.parentMode ? t('parentMode', { name: s.childName }) : undefined;
 
   return (
-    <div className="min-h-full bg-bg">
+    <div className="min-h-full bg-transparent">
       {s.step === 'welcome' && (
         <Welcome onStart={() => dispatch({ type: 'START' })} onSkipToWaiting={skipToWaitingDemo} />
       )}
@@ -186,7 +186,7 @@ function KioskFlow() {
 
 export function KioskApp() {
   return (
-    <main className="min-h-full bg-bg">
+    <main className="min-h-full bg-transparent">
       <Routes>
         <Route path="waiting" element={<WaitingHub />} />
         <Route path="games/firefly" element={<FireflyTap />} />

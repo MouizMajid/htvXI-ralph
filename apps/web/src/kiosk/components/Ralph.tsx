@@ -1,18 +1,20 @@
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  BLINKING_POSES,
-  POSE_FRAME,
-  SEPARATE_TAIL,
-  TAIL_MOTION,
-  TAIL_PIVOT,
-  TALK_FRAMES,
-  artUrl,
-  resolveArt,
-  subscribeArt,
-  type RalphFrame,
-  type RalphPose,
-} from '../art';
+import { BLINKING_POSES, type RalphPose } from '../art';
+
+const EYES_OPEN = '/ralph/ralph-eyes-open.png';
+const EYES_CLOSED = '/ralph/ralph-eyes-closed.png';
+const TAIL_WAG = '/ralph/ralph-tail-wag.png';
+
+const ASSESSMENT_SEQUENCE = [
+  { frame: 'open', duration: 420 },
+  { frame: 'wag', duration: 420 },
+  { frame: 'open', duration: 420 },
+  { frame: 'wag', duration: 420 },
+  { frame: 'blink', duration: 120 },
+] as const;
+
+type AssessmentFrame = (typeof ASSESSMENT_SEQUENCE)[number]['frame'];
 
 interface RalphProps {
   pose?: RalphPose;
@@ -20,23 +22,15 @@ interface RalphProps {
   className?: string;
 }
 
-let artVersion = 0;
-const subscribe = (cb: () => void) =>
-  subscribeArt(() => {
-    artVersion++;
-    cb();
-  });
-
 export function Ralph({ pose = 'idle', className = 'size-64' }: RalphProps) {
-  useSyncExternalStore(subscribe, () => artVersion);
-  useEffect(resolveArt, []);
-
   const [blinking, setBlinking] = useState(false);
-  const [talkIndex, setTalkIndex] = useState(0);
+  const [animationFrame, setAnimationFrame] = useState<AssessmentFrame>('open');
+  // The welcome screen uses the wave pose; listen/think are used during assessment.
+  const wagging = pose === 'wave' || pose === 'listen' || pose === 'think';
 
   // Blink for ~120 ms every 3–5 s.
   useEffect(() => {
-    if (!BLINKING_POSES.includes(pose)) return;
+    if (wagging || !BLINKING_POSES.includes(pose)) return;
     let timer: ReturnType<typeof setTimeout>;
     const schedule = () => {
       timer = setTimeout(() => {
@@ -52,22 +46,30 @@ export function Ralph({ pose = 'idle', className = 'size-64' }: RalphProps) {
       clearTimeout(timer);
       setBlinking(false);
     };
-  }, [pose]);
+  }, [pose, wagging]);
 
-  // Simple lip flap while talking. TODO(Tier 3): drive by audio volume.
+  // On the title screen and during assessment, repeat open → wag → open → wag → blink.
   useEffect(() => {
-    if (pose !== 'talk') return;
-    const id = setInterval(() => setTalkIndex((i) => (i + 1) % TALK_FRAMES.length), 130);
-    return () => clearInterval(id);
-  }, [pose]);
+    if (!wagging) {
+      setAnimationFrame('open');
+      return;
+    }
 
-  const frame: RalphFrame =
-    pose === 'talk'
-      ? TALK_FRAMES[talkIndex]!
-      : blinking
-        ? 'ralph-blink'
-        : POSE_FRAME[pose];
-  const tail = TAIL_MOTION[pose];
+    let index = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const advance = () => {
+      const step = ASSESSMENT_SEQUENCE[index]!;
+      setAnimationFrame(step.frame);
+      index = (index + 1) % ASSESSMENT_SEQUENCE.length;
+      timer = setTimeout(advance, step.duration);
+    };
+    advance();
+    return () => clearTimeout(timer);
+  }, [wagging]);
+
+  const eyesAreClosed = pose === 'sleep' || (wagging ? animationFrame === 'blink' : blinking);
+  const showOpenFrame = !eyesAreClosed && (!wagging || animationFrame === 'open');
+  const showTailWagFrame = !eyesAreClosed && wagging && animationFrame === 'wag';
 
   return (
     <motion.div
@@ -77,22 +79,29 @@ export function Ralph({ pose = 'idle', className = 'size-64' }: RalphProps) {
       role="img"
       aria-label="Ralph the raccoon"
     >
-      {SEPARATE_TAIL && (
-        <motion.img
-          src={artUrl('ralph-tail')}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 size-full object-contain"
-          style={{ transformOrigin: TAIL_PIVOT }}
-          animate={{ rotate: tail.rotate }}
-          transition={{ duration: tail.duration, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      )}
-      <img
-        src={artUrl(frame)}
+      <motion.img
+        src={EYES_OPEN}
         alt=""
         draggable={false}
         className="absolute inset-0 size-full object-contain"
+        animate={{ opacity: showOpenFrame ? 1 : 0 }}
+        transition={{ duration: 0.1 }}
+      />
+      <motion.img
+        src={TAIL_WAG}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 size-full object-contain"
+        animate={{ opacity: showTailWagFrame ? 1 : 0 }}
+        transition={{ duration: 0.1 }}
+      />
+      <motion.img
+        src={EYES_CLOSED}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 size-full object-contain"
+        animate={{ opacity: eyesAreClosed ? 1 : 0 }}
+        transition={{ duration: 0.04 }}
       />
     </motion.div>
   );

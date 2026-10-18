@@ -8,7 +8,9 @@
 /* `static`: always emit every token, even ones only referenced from JS (e.g. var(--color-face-${n})). */
 @theme static {
   /* fonts */
-  --font-sans: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
+  --font-sans: 'Indie Flower', 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
+  --font-display: 'Indie Flower', 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'Indie Flower', 'Nunito', 'Noto Sans Devanagari', 'Noto Sans SC', system-ui, sans-serif;
 
   /* surfaces */
   --color-bg: #fdf8f0; /* kiosk background (warm off-white) */
@@ -80,14 +82,33 @@
 }
 
 html,
-body,
-#root {
-  height: 100%;
+body {
+  min-height: 100%;
 }
 
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background: var(--color-bg);
+  background: var(--color-bg) url('/paper-bg.jpg') center top / cover fixed no-repeat;
   -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+  background: var(--color-bg) url('/paper-bg.jpg') center top / cover fixed no-repeat;
+}
+
+.staff-portal {
+  --font-sans: Calibri, 'Segoe UI', Arial, sans-serif;
+  --font-display: Calibri, 'Segoe UI', Arial, sans-serif;
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
 }
