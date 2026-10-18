@@ -11,7 +11,7 @@ export function Welcome({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="relative mx-auto flex min-h-full max-w-2xl flex-col items-center justify-center gap-7 overflow-hidden p-6 text-center">
+    <section className="relative mx-auto flex min-h-full max-w-7xl flex-col items-center justify-center gap-7 overflow-hidden p-6 text-center">
       {/* Soft decorative background sparkles */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-70" aria-hidden>
         <span className="absolute top-10 left-10 text-3xl">✨</span>
@@ -20,35 +20,49 @@ export function Welcome({
         <span className="absolute right-12 bottom-24 text-3xl">💛</span>
       </div>
 
-      {/* Badge */}
-      <motion.span
+      {/* Hand-painted RALPH title */}
+      <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-pill border-2 border-accent/60 bg-surface px-5 py-1.5 text-sm font-extrabold tracking-wide text-ink shadow-soft"
+        className="flex flex-col items-center"
       >
-        🩺 RALPH · YOUR WAITING-ROOM BUDDY
-      </motion.span>
-
-      {/* Hand-drawn Ralph waving */}
-      <motion.div
-        initial={{ scale: 0.85, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-      >
-        <Ralph pose="wave" className="size-72 sm:size-84" />
+        <img
+          src="/ralph-title.png"
+          alt="RALPH"
+          className="w-[clamp(14rem,60vw,64rem)] object-contain"
+        />
+        <img
+          src="/waitingroombuddy.png"
+          alt="Your waiting room buddy!"
+          className="-mt-[clamp(3rem,13vw,13rem)] w-[min(60vw,40rem)] object-contain"
+        />
       </motion.div>
 
-      {/* Speech Bubble Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="max-w-lg rounded-card border-2 border-primary/20 bg-surface px-7 py-5 shadow-soft"
-      >
-        <h1 className="text-3xl leading-snug font-extrabold text-ink sm:text-4xl">
-          “{t('welcome.greeting')}”
-        </h1>
-      </motion.div>
+      <div className="-mt-8 flex w-full max-w-2xl items-center justify-start gap-0">
+        {/* Hand-painted welcome speech bubble on the left */}
+        <motion.div
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative z-10 w-[38%]"
+        >
+          <img
+            src="/speechbubble.png"
+            alt="Hi, I'm Ralph! Can you help me learn how you're feeling?"
+            className="w-full object-contain"
+          />
+        </motion.div>
+
+        {/* Hand-drawn Ralph waving on the right */}
+        <motion.div
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+          className="-ml-[9%] w-[70%] shrink-0"
+        >
+          <Ralph pose="wave" className="aspect-square w-full" />
+        </motion.div>
+      </div>
 
       <div className="flex flex-col items-center gap-3">
         <motion.button
