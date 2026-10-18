@@ -10,7 +10,7 @@
   },
   "who": {
     "title": "Hi grown-up! Who's here today?",
-    "name": "Child's first name",
+    "name": "Child's full name",
     "age": "Age (years)",
     "ageError": "Age not valid for this pediatric clinic.",
     "weight": "Weight in kg (optional)",
