@@ -28,7 +28,7 @@ const tEn = i18n.getFixedT('en');
 type Filter = 'all' | 'alerts' | 'waiting' | 'in_room';
 const FILTERS: { id: Filter; label: string; match: (v: StaffQueueItem) => boolean }[] = [
   { id: 'all', label: 'All', match: () => true },
-  { id: 'alerts', label: 'Has alerts', match: (v) => v.open_alerts > 0 },
+  { id: 'alerts', label: 'Alerts', match: (v) => v.open_alerts > 0 },
   { id: 'waiting', label: 'Waiting', match: (v) => v.status === 'waiting' },
   { id: 'in_room', label: 'In room', match: (v) => v.status === 'in_room' },
 ];

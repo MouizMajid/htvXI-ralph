@@ -123,7 +123,7 @@ function KioskFlow() {
       type: 'RESUME_WAITING',
       visitId: 'demo',
       lang: s.lang,
-      childName: s.childName || 'Maya',
+      childName: s.childName || '',
       parentMode: false,
     });
   };
