@@ -6,13 +6,7 @@ export type AnswerType = 'yes_no' | 'choice' | 'body_map' | 'faces' | 'number' |
 export type VisitStatus = 'waiting' | 'in_room' | 'done';
 export type Speaker = 'ralph' | 'child' | 'parent';
 export type Feeling = 'better' | 'same' | 'worse' | 'no_response';
-export type GameId = 'bubble_pop' | 'firefly' | 'ralph_says' | 'firefly_tap' | 'cyber_circuit';
 
-export interface Reason {
-  points: number;
-  alert: boolean;
-  text: string;
-}
 
 /** What the child picks on the first screen. */
 export const COMPLAINTS = ['tummy', 'fever', 'breathing', 'other'] as const;

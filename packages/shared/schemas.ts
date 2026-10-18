@@ -88,37 +88,6 @@ export const CreateVisitBodySchema = z.object({
 });
 export type CreateVisitBody = z.infer<typeof CreateVisitBodySchema>;
 
-// ---------- Games (Firefly Tap, Cyber Circuit) ----------
-
-const HandSchema = z.enum(['dominant', 'non_dominant']);
-
-/** One row per target / link → `game_events`. */
-export const GameEventSchema = z.object({
-  at_ms: z.number().nonnegative(),
-  round: z.number().int().nonnegative(),
-  phase: z.string().max(20).optional(),
-  hand: HandSchema,
-  reaction_ms: z.number().nonnegative().nullable(),
-  hit: z.boolean(),
-  accuracy_px: z.number().nonnegative().nullable().optional(),
-  label: z.string().max(8).optional(),
-});
-export type GameEvent = z.infer<typeof GameEventSchema>;
-
-const SummaryValue = z.union([z.number(), z.string(), z.boolean(), z.null()]);
-
-export const GameResultSchema = z.object({
-  game: z.enum(['firefly_tap', 'cyber_circuit']),
-  handedness: z.enum(['left', 'right', 'unknown']),
-  started_at: z.string().datetime(),
-  events: z.array(GameEventSchema).max(500),
-  /** Flat numbers for trends + baseline comparison (medianReactionMs, hitRate, …). */
-  summary: z.record(z.string(), SummaryValue),
-  /** Nurse-facing plain-language notes from motorObservations(). */
-  observations: z.array(z.string().max(200)).max(20),
-});
-export type GameResult = z.infer<typeof GameResultSchema>;
-
 // ---------- Check-ins ----------
 
 export const CheckinBodySchema = z.object({

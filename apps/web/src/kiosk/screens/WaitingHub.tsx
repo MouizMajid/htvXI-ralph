@@ -5,8 +5,6 @@ import {
   AUTO_CHECKIN_MINUTES,
   DEFAULT_COMPANION_TIMINGS,
   type Feeling,
-  type GameResult,
-  type Handedness,
   type Lang,
 } from '@ralph/shared';
 import { Ralph } from '../components/Ralph';
@@ -43,13 +41,12 @@ export function WaitingHub({
 }: WaitingHubProps) {
   const { t } = useTranslation();
   const [muted] = useRalphMuted();
-  const [name, setName] = useState(initialName);
-  const [age, setAge] = useState(initialAge);
-  const [handedness, setHandedness] = useState<Handedness | undefined>(undefined);
+  const name = initialName;
+  const age = initialAge;
   const [tab, setTab] = useState<ActiveTab>('hub');
-  const [lastResult, setLastResult] = useState<GameResult | null>(null);
   const [starsEarned, setStarsEarned] = useState(0);
-  const [showTelemetry, setShowTelemetry] = useState(false);
+  // Games report only "a round finished" (they measure nothing). Check-ins hook in here.
+  const roundFinished = () => setStarsEarned((s) => s + 1);
 
   // Automatic 12-minute check-in modal when on the hub (disabled when muted)
   const [checkinModalOpen, setCheckinModalOpen] = useState(false);
@@ -95,33 +92,12 @@ export function WaitingHub({
 
   if (tab === 'firefly_tap') {
     return (
-      <FireflyTap
-        visitId={visitId}
-        ageYears={age}
-        initialHandedness={handedness}
-        onHandednessChange={setHandedness}
-        onFinish={(res) => {
-          setLastResult(res);
-          setStarsEarned((s) => s + 1);
-        }}
-        onExit={() => setTab('hub')}
-      />
+      <FireflyTap ageYears={age} onRoundEnd={roundFinished} onExit={() => setTab('hub')} />
     );
   }
 
   if (tab === 'cyber_circuit') {
-    return (
-      <CyberCircuit
-        visitId={visitId}
-        initialHandedness={handedness}
-        onHandednessChange={setHandedness}
-        onFinish={(res) => {
-          setLastResult(res);
-          setStarsEarned((s) => s + 1);
-        }}
-        onExit={() => setTab('hub')}
-      />
-    );
+    return <CyberCircuit onRoundEnd={roundFinished} onExit={() => setTab('hub')} />;
   }
 
   if (tab === 'companion') {
@@ -172,30 +148,6 @@ export function WaitingHub({
         <div className="flex flex-wrap items-center gap-3">
           {/* Mute / Unmute Button for 12-minute check-ins */}
           <MuteCheckinButton />
-
-          <div className="flex items-center gap-2 rounded-card bg-bg px-4 py-2 text-sm font-bold">
-            <label className="text-ink-muted" htmlFor="demo-name">
-              Name:
-            </label>
-            <input
-              id="demo-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-20 rounded-pill bg-surface px-3 py-1 font-extrabold text-ink shadow-soft outline-none"
-            />
-            <label className="text-ink-muted" htmlFor="demo-age">
-              Age:
-            </label>
-            <input
-              id="demo-age"
-              type="number"
-              min={4}
-              max={17}
-              value={age}
-              onChange={(e) => setAge(Math.max(4, Math.min(17, Number(e.target.value) || 7)))}
-              className="w-14 rounded-pill bg-surface px-2 py-1 text-center font-extrabold text-ink shadow-soft outline-none"
-            />
-          </div>
         </div>
       </header>
 
@@ -303,7 +255,8 @@ export function WaitingHub({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="inline-flex size-14 items-center justify-center rounded-pill border-2 border-cyber-node bg-cyber-bg font-mono text-2xl font-extrabold text-cyber-node">
-                1➔A
+                <span className="text-cyber-node">1</span>
+                <span className="text-cyber-alt">2</span>
               </span>
               <span className="rounded-pill border border-cyber-node bg-cyber-node/15 px-3.5 py-1 text-xs font-extrabold text-cyber-node">
                 {isTeen ? '★ Recommended · Ages 10+' : 'Ages 10+'}
@@ -315,7 +268,7 @@ export function WaitingHub({
             <p className="text-base font-semibold text-cyber-muted">
               {t(
                 'games.cyber.cardDesc',
-                'Link nodes 1➔25 to boot up, then alternate 1➔A➔2➔B under the clock to unlock the VIP Wi-Fi code!',
+                'Connect the nodes to boot up the system, then switch colours as you count to break the firewall and earn a hacker badge!',
               )}
             </p>
           </div>
@@ -357,41 +310,6 @@ export function WaitingHub({
         </motion.button>
       </motion.div>
 
-      {/* Demo Telemetry Drawer (shows what the nurse dashboard receives) */}
-      {lastResult && (
-        <div className="rounded-card bg-surface p-4 shadow-soft">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-extrabold text-ink">
-              🩺 Staff Telemetry Captured ({lastResult.game === 'firefly_tap' ? 'Firefly Tap' : 'Cyber Circuit'})
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowTelemetry((s) => !s)}
-              className="text-sm font-bold text-secondary underline"
-            >
-              {showTelemetry ? 'Hide details' : 'Show nurse metrics'}
-            </button>
-          </div>
-          {showTelemetry && (
-            <div className="mt-3 space-y-2 text-xs text-ink-muted">
-              {lastResult.observations.length > 0 ? (
-                <ul className="list-disc pl-5 font-bold text-ink">
-                  {lastResult.observations.map((obs, i) => (
-                    <li key={i}>{obs}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="font-semibold text-success">
-                  No asymmetry, slowing, or tremor flags observed in this round.
-                </p>
-              )}
-              <pre className="overflow-x-auto rounded-card bg-bg p-3 font-mono text-xs text-ink">
-                {JSON.stringify(lastResult.summary, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
     </section>
   );
 }

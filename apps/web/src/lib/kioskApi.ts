@@ -1,21 +1,10 @@
-import type { CheckinBody, CompanionTurnBody, CompanionTurnResponse, GameResult } from '@ralph/shared';
+import type { CheckinBody, CompanionTurnBody, CompanionTurnResponse } from '@ralph/shared';
 import { api } from './api';
 
 /**
- * Kiosk API calls for games, check-ins, and companion chat.
+ * Kiosk API calls for check-ins and companion chat.
  * All fail soft: the kiosk keeps working (offline fallback) if the API is down.
  */
-
-export async function postGameResult(visitId: string, result: GameResult): Promise<void> {
-  try {
-    await api(`/visits/${encodeURIComponent(visitId)}/games`, {
-      method: 'POST',
-      body: JSON.stringify(result),
-    });
-  } catch (err) {
-    console.warn('game result not saved', err);
-  }
-}
 
 export async function postCheckin(visitId: string, body: CheckinBody): Promise<void> {
   try {

@@ -59,7 +59,7 @@
   --color-cyber-panel: #0f172e;
   --color-cyber-grid: #16244a;
   --color-cyber-node: #38bdf8;
-  --color-cyber-letter: #c084fc;
+  --color-cyber-alt: #fb923c; /* 2nd colour in Cyber Circuit: orange vs blue, + square shape */
   --color-cyber-ok: #34d399;
   --color-cyber-error: #fb3b5c;
   --color-cyber-text: #e0f2fe;
