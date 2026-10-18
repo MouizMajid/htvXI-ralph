@@ -11,7 +11,8 @@ const FALLBACK = ['⭐', '🦝', '🌈', '🚀', '🦖', '🌻'];
 /** RALPH's job ends here — the nurse takes over in person. */
 export function Goodbye({ childName, onDone }: { childName: string; onDone: () => void }) {
   const { t, i18n } = useTranslation();
-  useSay(t('goodbye.title', { name: childName }), i18n.language);
+  // Spoken line has no name in it, so it can be pre-generated in Ralph's voice (pnpm tts:warm).
+  useSay(t('goodbye.spoken'), i18n.language);
   const n = useMemo(() => Math.floor(Math.random() * STICKERS), []);
   return (
     <Shell pose="celebrate" big line={t('goodbye.title', { name: childName })}>

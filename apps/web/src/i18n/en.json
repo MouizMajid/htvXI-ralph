@@ -115,6 +115,7 @@
   },
   "goodbye": {
     "title": "Bye, {{name}}! The nurse is ready for you.",
+    "spoken": "The nurse is ready for you. Great job today, bye for now!",
     "sticker": "Here's a sticker for being so brave!",
     "done": "Done"
   },
@@ -137,7 +138,7 @@
       "streak": "{{n}}x Streak!",
       "fireflyLabel": "Firefly",
       "doneTitle": "You caught {{count}} fireflies!",
-      "doneSpeech": "Woohoo! You caught {{count}} fireflies! My lantern is shining so bright. Thank you!",
+      "doneSpeech": "Woohoo! Look at all those fireflies! My lantern is shining so bright. Thank you!",
       "statRound": "This round",
       "statStreak": "Best streak",
       "statTotal": "All fireflies"

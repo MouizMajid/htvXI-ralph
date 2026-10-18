@@ -314,8 +314,7 @@ export function FireflyTap({ ageYears = 6, onRoundStart, onRoundEnd, onExit }: F
           title={t('games.fireflyTap.doneTitle', 'You caught {{count}} fireflies!', { count: caught })}
           speechText={t(
             'games.fireflyTap.doneSpeech',
-            'Woohoo! You caught {{count}} fireflies! My lantern is shining so bright. Thank you!',
-            { count: caught },
+            'Woohoo! Look at all those fireflies! My lantern is shining so bright. Thank you!',
           )}
           stats={[
             { icon: '✨', label: t('games.fireflyTap.statRound', 'This round'), value: `${caught} / ${FIREFLIES_PER_ROUND}` },
