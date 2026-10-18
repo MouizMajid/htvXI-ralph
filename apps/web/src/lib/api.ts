@@ -1,4 +1,13 @@
-import type { Complaint, Feeling, Lang, NodeView, ParentAnswers, ReplyKey } from '@ralph/shared';
+import type {
+  Complaint,
+  Feeling,
+  Lang,
+  NodeView,
+  ParentAnswers,
+  ReplyKey,
+  StaffQueueItem,
+  StaffVisitDetail,
+} from '@ralph/shared';
 
 export class ApiError extends Error {
   constructor(
@@ -48,4 +57,14 @@ export const kioskApi = {
     post<{ ok: true }>(`/visits/${visitId}/checkins`, body),
 
   status: (visitId: string) => api<VisitStatus>(`/visits/${visitId}/status`),
+};
+
+// ---------- Staff dashboard (see api-and-ai skill) ----------
+
+export type StaffAction = { action: 'call_in' } | { action: 'done' } | { action: 'acknowledge_flag'; flag_id: number };
+
+export const staffApi = {
+  queue: () => api<{ visits: StaffQueueItem[] }>('/staff/queue'),
+  visit: (id: string) => api<StaffVisitDetail>(`/staff/visits/${id}`),
+  action: (id: string, body: StaffAction) => post<{ ok: true }>(`/staff/visits/${id}/actions`, body),
 };
