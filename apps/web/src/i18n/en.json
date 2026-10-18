@@ -102,12 +102,13 @@
   },
   "waiting": {
     "title": "Thanks, {{name}}! Let's hang out while we wait for the nurse.",
-    "subtitle": "Play a game or just talk and rest with Ralph.",
-    "games": "Pick a game below or chat with Ralph!",
+    "subtitle": "Play a game or just chat and rest with Ralph.",
+    "stars_one": "{{count}} RALPH STAR",
+    "stars_other": "{{count}} RALPH STARS",
     "playFirefly": "Play Firefly Tap ✨",
     "playCyber": "Launch Cyber Hack ⚡",
     "companionTitle": "Don't feel like playing a game?",
-    "companionDesc": "Just talk with Ralph about how you feel or your favourite hobbies — or rest quietly and Ralph will check on you every 12 minutes (unless muted).",
+    "companionDesc": "Just chat with Ralph about your favourite things, or rest. Ralph will check on you every so often.",
     "talkWithRalph": "Talk with Ralph 🦝"
   },
   "goodbye": {
@@ -167,21 +168,26 @@
   },
   "companion": {
     "title": "Chat with Ralph",
-    "opening": "Hi {{name}}! We don't have to play any games. How are you feeling right now? Or we can chat about your favourite things!",
-    "activeSub": "Tell Ralph how you feel or chat about things you like!",
-    "quietSub": "Ralph is resting quietly next to you. Say anything to wake him, or he will check in soon.",
+    "opening": "Hi {{name}}! We don't have to play any games. Want to tell me about your favourite things?",
+    "activeSub": "Chat with Ralph about things you like!",
+    "quietSub": "Ralph is resting quietly next to you. Say anything to wake him up.",
     "switchGames": "Play a Game",
     "sleepingMsg": "I'm resting right here with you. Tap or talk anytime!",
-    "nextCheckinIn": "Next check-in in {{sec}}s",
-    "demoCheckinNow": "Check in now (\"Hey, how are you feeling now?\")",
-    "checkinLine": "Hey, how are you feeling now?",
-    "painScaleLabel": "How much does it hurt right now? (optional)",
-    "feelBetter": "Feeling better",
-    "feelSame": "About the same",
-    "feelWorse": "Feeling worse",
     "talkHobbies": "Talk about fun stuff",
+    "funPrefix": "Let's talk about something fun!",
     "wantRest": "I want to rest",
+    "restMessage": "I'm tired, I want to rest for a bit.",
+    "talk": "Talk",
+    "stop": "Stop",
     "inputPlaceholder": "Type or tap to talk to Ralph…",
     "send": "Send"
+  },
+  "checkin": {
+    "ask": "Hey, how are you feeling now?",
+    "better": "Better",
+    "same": "About the same",
+    "worse": "Worse",
+    "face": "Which face shows how you feel?",
+    "skipFace": "Skip"
   }
 }

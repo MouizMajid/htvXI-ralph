@@ -29,9 +29,7 @@ export async function companionReply(body: CompanionTurnBody): Promise<Companion
       role: 'user',
       parts: [
         {
-          text: body.is_checkin_reply
-            ? `(Answering Ralph's "how are you feeling now?" check-in) ${body.message}`
-            : body.message,
+          text: body.message,
         },
       ],
     },
@@ -54,8 +52,9 @@ export async function companionReply(body: CompanionTurnBody): Promise<Companion
       });
       const parsed = CompanionAiSchema.safeParse(JSON.parse(res.text ?? ''));
       if (parsed.success) return parsed.data;
-    } catch {
-      // retry once, then fall back
+    } catch (err) {
+      // Retry once, then fall back. Log it: Gemini outages (e.g. 503 high demand) were invisible.
+      console.warn(`companion: Gemini attempt ${attempt + 1} failed:`, (err as Error).message.slice(0, 200));
     }
   }
   return null;

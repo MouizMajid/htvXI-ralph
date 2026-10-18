@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Ralph } from '../components/Ralph';
 import { RalphCelebration } from '../components/RalphCelebration';
-import { MuteCheckinButton } from '../components/MuteCheckinButton';
 import { playFireflyChime } from '../../lib/sfx';
 
 /**
@@ -15,6 +14,8 @@ import { playFireflyChime } from '../../lib/sfx';
 
 interface FireflyTapProps {
   ageYears?: number;
+  /** A round started — not a good moment for a check-in. */
+  onRoundStart?: () => void;
   /** A round finished — the hub may show a check-in before the next one. */
   onRoundEnd?: () => void;
   onExit?: () => void;
@@ -31,7 +32,7 @@ interface ActiveFly {
 
 const FIREFLIES_PER_ROUND = 10;
 
-export function FireflyTap({ ageYears = 6, onRoundEnd, onExit }: FireflyTapProps) {
+export function FireflyTap({ ageYears = 6, onRoundStart, onRoundEnd, onExit }: FireflyTapProps) {
   const { t, i18n } = useTranslation();
   const [stage, setStage] = useState<Stage>('ready');
   const [round, setRound] = useState(1);
@@ -105,6 +106,7 @@ export function FireflyTap({ ageYears = 6, onRoundEnd, onExit }: FireflyTapProps
     setCaught(0);
     setSpawnedCount(0);
     setStage('play');
+    onRoundStart?.();
     spawnNext();
   };
 
@@ -143,7 +145,6 @@ export function FireflyTap({ ageYears = 6, onRoundEnd, onExit }: FireflyTapProps
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <MuteCheckinButton />
           {onExit && (
             <button
               onClick={() => {

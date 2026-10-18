@@ -1,27 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import {
-  AUTO_CHECKIN_MINUTES,
-  DEFAULT_COMPANION_TIMINGS,
-  type Feeling,
-  type Lang,
-} from '@ralph/shared';
+import type { Lang } from '@ralph/shared';
 import { Ralph } from '../components/Ralph';
-import { MuteCheckinButton } from '../components/MuteCheckinButton';
-import { postCheckin } from '../../lib/kioskApi';
-import { speak, useRalphMuted } from '../../lib/speech';
+import { CheckinPrompt } from '../components/CheckinPrompt';
 import { FireflyTap } from '../games/GameOne';
 import { CyberCircuit } from '../games/GameTwo';
 import { Companion } from './Companion';
 
 /**
- * Waiting-room hub: lets the child choose age-appropriate games ("Firefly Tap"
- * for younger kids, "Cyber Circuit: Firewall Hacker" for pre-teens/adolescents)
- * or simply hang out and talk with Ralph if they don't feel up to playing.
+ * Waiting-room hub: age-appropriate games ("Firefly Tap" for younger kids, "Cyber Circuit"
+ * for older ones) or a chat with Ralph, while the child waits to be called in.
  *
- * Also runs the automatic 12-minute Ralph check-in timer (unless muted via the
- * Mute button).
+ * Check-ins: the server decides when one is due (`nextCheckinAt`, from CHECKIN_INTERVAL_SEC).
+ * Ralph asks at a natural break — straight away on this screen, at the end of a game round,
+ * or between chat messages — never mid-game. The child answers by tap (CheckinPrompt).
  */
 
 interface WaitingHubProps {
@@ -29,180 +22,121 @@ interface WaitingHubProps {
   initialName?: string;
   initialAge?: number;
   language?: Lang;
+  /** ISO time the next check-in is due (from GET /visits/:id/status); null = none yet. */
+  nextCheckinAt?: string | null;
+  /** A check-in was saved — refresh status so the server schedules the next one. */
+  onCheckinSaved?: () => void;
 }
 
 type ActiveTab = 'hub' | 'firefly_tap' | 'cyber_circuit' | 'companion';
+
+function useNow(ms: number) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), ms);
+    return () => clearInterval(id);
+  }, [ms]);
+  return now;
+}
 
 export function WaitingHub({
   visitId = 'demo',
   initialName = 'Maya',
   initialAge = 7,
   language = 'en',
+  nextCheckinAt = null,
+  onCheckinSaved,
 }: WaitingHubProps) {
   const { t } = useTranslation();
-  const [muted] = useRalphMuted();
   const name = initialName;
   const age = initialAge;
   const [tab, setTab] = useState<ActiveTab>('hub');
   const [starsEarned, setStarsEarned] = useState(0);
-  // Games report only "a round finished" (they measure nothing). Check-ins hook in here.
-  const roundFinished = () => setStarsEarned((s) => s + 1);
 
-  // Automatic 12-minute check-in modal when on the hub (disabled when muted)
-  const [checkinModalOpen, setCheckinModalOpen] = useState(false);
-  const [remainingSec, setRemainingSec] = useState<number>(
-    Math.round(DEFAULT_COMPANION_TIMINGS.quietCheckinMs / 1000),
-  );
-  const deadlineRef = useRef<number>(Date.now() + DEFAULT_COMPANION_TIMINGS.quietCheckinMs);
+  // ---- check-ins at natural breaks ----
+  const now = useNow(1000);
+  const [roundOver, setRoundOver] = useState(false); // a game round just finished
+  const [chatIdle, setChatIdle] = useState(false); // Ralph isn't mid-sentence in chat
+  const [forced, setForced] = useState(false); // child said they feel worse in chat
+  const [answeredFor, setAnsweredFor] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (tab !== 'hub' || muted || checkinModalOpen) return;
+  const due = nextCheckinAt !== null && nextCheckinAt !== answeredFor && now >= Date.parse(nextCheckinAt);
+  const atBreak = tab === 'hub' || (tab === 'companion' ? chatIdle : roundOver);
+  const showCheckin = forced || (due && atBreak);
 
-    deadlineRef.current = Date.now() + DEFAULT_COMPANION_TIMINGS.quietCheckinMs;
-    setRemainingSec(Math.round(DEFAULT_COMPANION_TIMINGS.quietCheckinMs / 1000));
-
-    const tick = setInterval(() => {
-      const rem = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
-      setRemainingSec(rem);
-    }, 1000);
-
-    const timer = setTimeout(() => {
-      clearInterval(tick);
-      setCheckinModalOpen(true);
-      speak(
-        t('companion.checkinLine', 'Hey, how are you feeling now?'),
-        language,
-        () => {},
-      );
-    }, DEFAULT_COMPANION_TIMINGS.quietCheckinMs);
-
-    return () => {
-      clearInterval(tick);
-      clearTimeout(timer);
-    };
-  }, [checkinModalOpen, language, muted, t, tab]);
-
-  const handleQuickCheckin = (feeling: Exclude<Feeling, 'no_response'>) => {
-    void postCheckin(visitId, {
-      feeling,
-      source: 'timer',
-    });
-    setCheckinModalOpen(false);
+  const checkinDone = () => {
+    setForced(false);
+    setRoundOver(false);
+    setAnsweredFor(nextCheckinAt);
+    onCheckinSaved?.();
   };
 
+  const openTab = (next: ActiveTab) => {
+    setRoundOver(false);
+    setTab(next);
+  };
+
+  let content: React.ReactNode;
   if (tab === 'firefly_tap') {
-    return (
-      <FireflyTap ageYears={age} onRoundEnd={roundFinished} onExit={() => setTab('hub')} />
+    content = (
+      <FireflyTap
+        ageYears={age}
+        onRoundStart={() => setRoundOver(false)}
+        onRoundEnd={() => (setRoundOver(true), setStarsEarned((s) => s + 1))}
+        onExit={() => openTab('hub')}
+      />
     );
-  }
-
-  if (tab === 'cyber_circuit') {
-    return <CyberCircuit onRoundEnd={roundFinished} onExit={() => setTab('hub')} />;
-  }
-
-  if (tab === 'companion') {
-    return (
+  } else if (tab === 'cyber_circuit') {
+    content = (
+      <CyberCircuit
+        onRoundStart={() => setRoundOver(false)}
+        onRoundEnd={() => (setRoundOver(true), setStarsEarned((s) => s + 1))}
+        onExit={() => openTab('hub')}
+      />
+    );
+  } else if (tab === 'companion') {
+    content = (
       <Companion
         visitId={visitId}
         firstName={name}
         ageYears={age}
         language={language}
-        onSwitchToGames={() => setTab('hub')}
+        onIdleChange={setChatIdle}
+        onRequestCheckin={() => setForced(true)}
+        onSwitchToGames={() => openTab('hub')}
       />
     );
+  } else {
+    content = renderHub();
   }
 
-  const isTeen = age >= 10;
-  const mins = Math.floor(remainingSec / 60);
-  const secs = remainingSec % 60;
-
   return (
-    <section className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-between gap-6 p-4 sm:p-6">
-      {/* Header + patient age switcher, Mute button & stars counter */}
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-card border-2 border-accent/40 bg-surface p-5 shadow-soft">
-        <div className="flex items-center gap-4">
-          <Ralph
-            pose={muted ? 'sleep' : starsEarned > 0 ? 'celebrate' : 'wave'}
-            className="size-24 sm:size-28"
-          />
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
+    <>
+      {content}
+      {showCheckin && <CheckinPrompt visitId={visitId} lang={language} onDone={checkinDone} />}
+    </>
+  );
+
+  // A render function, not a component: the 1-second clock must not remount the hub.
+  function renderHub() {
+    const isTeen = age >= 10;
+    const setTabFromCard = openTab;
+    return (
+      <section className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-between gap-6 p-4 sm:p-6">
+        <header className="flex flex-wrap items-center justify-between gap-4 rounded-card border-2 border-accent/40 bg-surface p-5 shadow-soft">
+          <div className="flex items-center gap-4">
+            <Ralph pose={starsEarned > 0 ? 'celebrate' : 'wave'} className="size-24 sm:size-28" />
+            <div>
               <span className="rounded-pill bg-accent/35 px-3 py-0.5 text-xs font-extrabold text-ink">
-                ⭐ {starsEarned} {starsEarned === 1 ? 'RALPH STAR' : 'RALPH STARS'}
+                ⭐ {t('waiting.stars', { count: starsEarned })}
               </span>
-              <span className="rounded-pill bg-bg px-3 py-0.5 text-xs font-extrabold text-ink-muted">
-                {muted
-                  ? `🔇 Auto ${AUTO_CHECKIN_MINUTES}m check-in muted`
-                  : `⏱ Next check-in in ${mins}m ${secs.toString().padStart(2, '0')}s`}
-              </span>
+              <h1 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">
+                {t('waiting.title', { name })}
+              </h1>
+              <p className="text-base font-semibold text-ink-muted">{t('waiting.subtitle')}</p>
             </div>
-            <h1 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">
-              {t('waiting.title', "Hi {{name}}! Let's hang out while we wait.", { name })}
-            </h1>
-            <p className="text-base font-semibold text-ink-muted">
-              {t('waiting.subtitle', 'Pick a fun game below, or just chat and rest with Ralph!')}
-            </p>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Mute / Unmute Button for 12-minute check-ins */}
-          <MuteCheckinButton />
-        </div>
-      </header>
-
-      {/* Automatic 12-Minute Check-In Popup Modal */}
-      <AnimatePresence>
-        {checkinModalOpen && !muted && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.92 }}
-            className="flex flex-col items-center gap-4 rounded-card border-2 border-primary bg-surface p-6 text-center shadow-soft"
-          >
-            <Ralph pose="gentle" className="size-36" />
-            <span className="rounded-pill bg-accent/35 px-4 py-1 text-xs font-extrabold text-ink">
-              🔔 {AUTO_CHECKIN_MINUTES}-MINUTE CHECK-IN
-            </span>
-            <h2 className="text-3xl font-extrabold text-ink">
-              “{t('companion.checkinLine', 'Hey, how are you feeling now?')}”
-            </h2>
-            <div className="flex flex-wrap justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => handleQuickCheckin('better')}
-                className="min-h-14 rounded-pill bg-yes px-6 text-lg font-extrabold text-on-primary shadow-soft active:scale-95"
-              >
-                😊 {t('companion.feelBetter', 'Feeling better')}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickCheckin('same')}
-                className="min-h-14 rounded-pill bg-secondary px-6 text-lg font-extrabold text-on-secondary shadow-soft active:scale-95"
-              >
-                😐 {t('companion.feelSame', 'About the same')}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickCheckin('worse')}
-                className="min-h-14 rounded-pill bg-no px-6 text-lg font-extrabold text-on-primary shadow-soft active:scale-95"
-              >
-                😣 {t('companion.feelWorse', 'Feeling worse')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCheckinModalOpen(false);
-                  setTab('companion');
-                }}
-                className="min-h-14 rounded-pill bg-accent px-6 text-lg font-extrabold text-ink shadow-soft active:scale-95"
-              >
-                💬 Chat with Ralph
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </header>
 
       {/* Main activity cards */}
       <div className="grid gap-6 sm:grid-cols-2">
@@ -238,7 +172,7 @@ export function WaitingHub({
           </div>
           <motion.button
             whileTap={{ scale: 0.96 }}
-            onClick={() => setTab('firefly_tap')}
+            onClick={() => setTabFromCard('firefly_tap')}
             className="min-h-16 w-full rounded-pill bg-accent text-xl font-extrabold text-ink shadow-soft"
           >
             {t('waiting.playFirefly', 'Play Firefly Tap ✨')}
@@ -274,7 +208,7 @@ export function WaitingHub({
           </div>
           <motion.button
             whileTap={{ scale: 0.96 }}
-            onClick={() => setTab('cyber_circuit')}
+            onClick={() => setTabFromCard('cyber_circuit')}
             className="min-h-16 w-full rounded-pill bg-cyber-node text-xl font-extrabold text-cyber-bg shadow-soft"
           >
             {t('waiting.playCyber', 'Launch Cyber Hack ⚡')}
@@ -296,22 +230,22 @@ export function WaitingHub({
             <p className="text-base font-semibold text-ink-muted">
               {t(
                 'waiting.companionDesc',
-                'Just talk with Ralph about how you feel or your favourite hobbies — or rest quietly and Ralph will check on you every 12 minutes (unless muted).',
+                'Just chat with Ralph about your favourite things, or rest. Ralph will check on you every so often.',
               )}
             </p>
           </div>
         </div>
         <motion.button
           whileTap={{ scale: 0.96 }}
-          onClick={() => setTab('companion')}
+          onClick={() => setTabFromCard('companion')}
           className="min-h-16 shrink-0 rounded-pill bg-secondary px-8 text-xl font-extrabold text-on-secondary shadow-soft"
         >
           {t('waiting.talkWithRalph', 'Talk with Ralph 🦝')}
         </motion.button>
       </motion.div>
-
-    </section>
-  );
+      </section>
+    );
+  }
 }
 
 export default WaitingHub;

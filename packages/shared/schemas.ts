@@ -88,47 +88,39 @@ export const CreateVisitBodySchema = z.object({
 });
 export type CreateVisitBody = z.infer<typeof CreateVisitBodySchema>;
 
-// ---------- Check-ins ----------
-
-export const CheckinBodySchema = z.object({
-  feeling: z.enum(['better', 'same', 'worse', 'no_response']),
-  pain_face: z.number().int().min(0).max(5).nullable().optional(),
-  note: z.string().max(300).optional(),
-  source: z.enum(['companion', 'game', 'timer']).default('companion'),
-});
-export type CheckinBody = z.infer<typeof CheckinBodySchema>;
-
-// ---------- Companion chat ----------
+// ---------- Companion chat (waiting room) ----------
 
 export const CompanionTurnBodySchema = z.object({
   message: z.string().min(1).max(500),
+  /** How the message came in: typed, or the browser's speech-to-text. */
+  input: z.enum(['text', 'voice']).default('text'),
   history: z
     .array(z.object({ speaker: z.enum(['ralph', 'child']), text: z.string().max(500) }))
     .max(30),
   first_name: z.string().max(60).default('friend'),
   age_years: z.number().min(0).max(18),
   language: LangSchema.default('en'),
-  /** true when the child is answering a "how are you feeling now?" check-in */
-  is_checkin_reply: z.boolean().default(false),
 });
 export type CompanionTurnBody = z.infer<typeof CompanionTurnBodySchema>;
 
-/** Gemini response contract for one companion turn. Zod-validated; retry once, then fallback. */
+/**
+ * Gemini response contract for one companion turn (Zod-validated; retry once, then the
+ * offline fallback). Gemini writes words and translates; it never reports how the child feels.
+ */
 export const CompanionAiSchema = z.object({
   ralph_reply: z.string().min(1).max(240),
-  feeling: z.enum(['better', 'same', 'worse']).nullable(),
-  pain_face: z.number().int().min(0).max(5).nullable(),
-  new_symptoms: z.array(z.string().max(80)).max(10),
+  /** The child's message translated to English for the nurse (same text if already English). */
+  text_en: z.string().max(1000),
   safeguarding_concern: z.boolean(),
   child_wants_quiet: z.boolean(),
 });
 export type CompanionAi = z.infer<typeof CompanionAiSchema>;
 
-/** What the kiosk receives. Never contains safeguarding or red-flag info. */
+/** What the kiosk receives. Never contains alert or safeguarding details. */
 export interface CompanionTurnResponse {
   /** null → kiosk uses its offline fallback reply */
   reply: string | null;
-  feeling: 'better' | 'same' | 'worse' | null;
   wants_quiet: boolean;
+  /** The message sounded like "I feel worse" (keyword match) → show the tap check-in. */
+  offer_checkin: boolean;
 }
-

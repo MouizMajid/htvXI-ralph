@@ -29,8 +29,6 @@ const ParentBody = z.object({
 const CheckinBody = z.object({
   feeling: z.enum(['better', 'same', 'worse', 'no_response']),
   pain_face: FaceSchema.nullable().optional(),
-  note: z.string().max(300).optional(),
-  source: z.enum(['companion', 'game', 'timer']).optional(),
 });
 
 export const visitRoutes: FastifyPluginAsync = async (app) => {
@@ -60,16 +58,8 @@ export const visitRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post('/visits/:id/checkins', async (req) => {
-    const body = parse(CheckinBody, req.body);
-    const rawId = (req.params as { id?: string })?.id;
-    if (rawId === 'demo') return { ok: true };
     const { id } = parse(IdParams, req.params);
-    await engine.checkin(id, {
-      feeling: body.feeling,
-      pain_face: body.pain_face,
-      note: body.note,
-      note_en: body.note,
-    });
+    await engine.checkin(id, parse(CheckinBody, req.body));
     return { ok: true };
   });
 

@@ -1,25 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { checkRedFlagPhrases, detectFeeling, fallbackReply, wantsQuiet } from './companion.js';
+import { fallbackReply, soundsWorse, wantsQuiet } from './companion.js';
 
-describe('detectFeeling', () => {
+describe('soundsWorse (offers the tap check-in; never stored)', () => {
   it.each([
-    ['I feel better now', 'better'],
-    ['kinda the same', 'same'],
-    ['worse, my tummy hurts more', 'worse'],
-    ['not good', 'worse'],
-    ['not bad', 'same'],
-    ['I like dinosaurs', null],
+    ['I feel worse', true],
+    ['worse, my tummy hurts more', true],
+    ['not good', true],
+    ['not bad', false],
+    ['I feel better now', false],
+    ['I like dinosaurs', false],
   ])('%s → %s', (text, expected) => {
-    expect(detectFeeling(text)).toBe(expected);
-  });
-});
-
-describe('checkRedFlagPhrases', () => {
-  it('catches breathing trouble with apostrophes stripped', () => {
-    expect(checkRedFlagPhrases("I can't breathe good")).toContain('Says it is hard to breathe');
-  });
-  it('benign text', () => {
-    expect(checkRedFlagPhrases('I breathe on the window to draw')).toEqual([]);
+    expect(soundsWorse(text)).toBe(expected);
   });
 });
 
@@ -28,9 +19,13 @@ describe('wantsQuiet / fallbackReply', () => {
     expect(wantsQuiet('ok bye ralph')).toBe(true);
     expect(wantsQuiet('I like bikes')).toBe(false);
   });
-  it('fallback asks a topic and reports feeling', () => {
-    const r = fallbackReply('better', 0, true);
-    expect(r.feeling).toBe('better');
-    expect(r.reply).toMatch(/\?$/);
+  it('reacts and asks a fun topic', () => {
+    expect(fallbackReply('I like bikes', 0).reply).toMatch(/\?$/);
+  });
+  it('points a "worse" message to the tap check-in', () => {
+    expect(fallbackReply('I feel worse', 0).reply).toMatch(/nurse/);
+  });
+  it('goes quiet on bye', () => {
+    expect(fallbackReply('bye', 0)).toMatchObject({ wantsQuiet: true });
   });
 });

@@ -1,21 +1,10 @@
-import type { CheckinBody, CompanionTurnBody, CompanionTurnResponse } from '@ralph/shared';
+import type { CompanionTurnBody, CompanionTurnResponse } from '@ralph/shared';
 import { api } from './api';
 
 /**
- * Kiosk API calls for check-ins and companion chat.
+ * Kiosk API call for the waiting-room chat (check-ins use kioskApi.checkin in ./api).
  * All fail soft: the kiosk keeps working (offline fallback) if the API is down.
  */
-
-export async function postCheckin(visitId: string, body: CheckinBody): Promise<void> {
-  try {
-    await api(`/visits/${encodeURIComponent(visitId)}/checkins`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-  } catch (err) {
-    console.warn('check-in not saved', err);
-  }
-}
 
 /** null → API unreachable / timed out; caller uses the offline reply. */
 export async function companionTurn(

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Ralph } from '../components/Ralph';
 import { RalphCelebration } from '../components/RalphCelebration';
-import { MuteCheckinButton } from '../components/MuteCheckinButton';
 import { playCyberGlitch, playCyberNodeLock } from '../../lib/sfx';
 
 /**
@@ -18,6 +17,8 @@ import { playCyberGlitch, playCyberNodeLock } from '../../lib/sfx';
  */
 
 interface CyberCircuitProps {
+  /** A round started — not a good moment for a check-in. */
+  onRoundStart?: () => void;
   /** A round finished — the hub may show a check-in before the next one. */
   onRoundEnd?: () => void;
   onExit?: () => void;
@@ -70,7 +71,7 @@ const COLOR_CLASS: Record<NodeColor, string> = {
   b: 'rounded-md border-cyber-alt bg-cyber-bg text-cyber-alt shadow-soft', // square: not colour alone
 };
 
-export function CyberCircuit({ onRoundEnd, onExit }: CyberCircuitProps) {
+export function CyberCircuit({ onRoundStart, onRoundEnd, onExit }: CyberCircuitProps) {
   const { t, i18n } = useTranslation();
   const [stage, setStage] = useState<Stage>('intro_boot');
   const [nodes, setNodes] = useState<CircuitNode[]>([]);
@@ -106,8 +107,9 @@ export function CyberCircuit({ onRoundEnd, onExit }: CyberCircuitProps) {
     wrongLockRef.current = null;
     phaseStartRef.current = performance.now();
     if (phase === 'firewall') setSecondsLeft(FIREWALL_SECONDS);
+    if (phase === 'boot') onRoundStart?.();
     setStage(phase === 'boot' ? 'play_boot' : 'play_firewall');
-  }, []);
+  }, [onRoundStart]);
 
   const finishPhase = useCallback(
     (phase: Phase, outOfTime = false) => {
@@ -199,7 +201,6 @@ export function CyberCircuit({ onRoundEnd, onExit }: CyberCircuitProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <MuteCheckinButton variant="cyber" />
           {onExit && (
             <button
               onClick={onExit}

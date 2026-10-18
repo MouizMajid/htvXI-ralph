@@ -36,6 +36,16 @@ describe('red flags', () => {
     expect(keys({ child_texts_en: ['I breathe fine'] })).toEqual([]);
   });
 
+  it('other worrying things said anywhere (answers, chat)', () => {
+    expect(keys({ child_texts_en: ['my chest hurts when I run'] })).toEqual(['red:said:chest_pain']);
+    expect(keys({ child_texts_en: ["I'm so sleepy", 'I think I am going to faint'] })).toEqual([
+      'red:said:very_sleepy',
+      'red:said:faint_dizzy',
+    ]);
+    expect(keys({ child_texts_en: ["I can't see the TV from here"] })).toEqual(['red:said:vision']);
+    expect(keys({ child_texts_en: ['I like my sleepy cat', 'the chest in the game had gold'] })).toEqual([]);
+  });
+
   it('worst pain face, from the tree or a check-in', () => {
     expect(keys({ slots: { pain_face: 5 } })).toEqual(['red:worst_pain']);
     expect(keys({ checkins: [{ at: at(0), feeling: 'same', pain_face: 5 }] })).toContain('red:worst_pain');
