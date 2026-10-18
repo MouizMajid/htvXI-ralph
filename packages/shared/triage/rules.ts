@@ -33,6 +33,27 @@ export const BREATHING_PHRASES = [
   'out of breath',
 ];
 
+/**
+ * Other worrying things a child might say (matched on English text: tree answers, chat
+ * messages, check-in notes). Each gives one heads-up, keyed so it's raised once per visit.
+ */
+export const SAID_RED_FLAGS: readonly { key: string; reason: string; phrases: readonly string[] }[] = [
+  { key: 'chest_pain', reason: 'Says their chest hurts', phrases: ['chest hurts', 'my chest hurts', 'chest pain'] },
+  {
+    key: 'very_sleepy',
+    reason: 'Says they are very sleepy',
+    phrases: ['so sleepy', 'really sleepy', "can't stay awake", 'cant stay awake', "can't keep my eyes open"],
+  },
+  {
+    key: 'faint_dizzy',
+    reason: 'Says they feel faint or dizzy',
+    phrases: ['going to faint', 'gonna faint', 'room is spinning', 'everything is spinning', 'really dizzy'],
+  },
+  { key: 'vomiting_again', reason: 'Says they threw up again', phrases: ['threw up again', 'throwing up', 'just threw up'] },
+  { key: 'severe_pain', reason: 'Says the pain is very bad', phrases: ['hurts so much', 'worst pain', 'hurts really really bad'] },
+  { key: 'vision', reason: 'Says they have trouble seeing', phrases: ["can't see", 'cant see', 'seeing double'] },
+];
+
 export interface AlertInput {
   age_years: number;
   complaint: Complaint | null;
@@ -56,6 +77,10 @@ function redFlags({ age_years, complaint, slots, parent, checkins, child_texts_e
   if (slots.hard_to_breathe === 'yes') red('hard_to_breathe', "Says it's hard to breathe right now");
   const breathingWords = child_texts_en.map((t) => findPhrase(t, BREATHING_PHRASES, 'en')).find(Boolean);
   if (breathingWords) red('breathing_words', `Said "${breathingWords}"`);
+  for (const flag of SAID_RED_FLAGS) {
+    const said = child_texts_en.map((t) => findPhrase(t, flag.phrases, 'en')).find(Boolean);
+    if (said) red(`said:${flag.key}`, `${flag.reason} ("${said}")`);
+  }
 
   const faces = [slots.pain_face, ...checkins.map((c) => c.pain_face)];
   if (faces.some((f) => f === RULES.WORST_FACE)) red('worst_pain', 'Picked the worst pain face (5 of 5)');

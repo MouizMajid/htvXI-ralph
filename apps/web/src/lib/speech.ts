@@ -1,44 +1,9 @@
-import { useSyncExternalStore } from 'react';
-
 /**
- * Browser speech + shared Mute state for Ralph's voice and automatic 6-minute check-ins.
+ * Browser speech for Ralph's voice (and the child's, via speech recognition). No mute: the
+ * tablet's volume handles sound, and check-ins can't be switched off.
  * TODO(Tier 1 #3/#4): swap to Gemini TTS (/api/tts) + Transcribe (/turns/audio)
  * per the speech-i18n skill; keep these as the documented fallback.
  */
-
-let muted = false;
-const muteListeners = new Set<() => void>();
-
-export function isRalphMuted(): boolean {
-  return muted;
-}
-
-export function setRalphMuted(next: boolean): void {
-  if (muted === next) return;
-  muted = next;
-  if (muted && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
-  muteListeners.forEach((fn) => fn());
-}
-
-export function toggleRalphMuted(): boolean {
-  setRalphMuted(!muted);
-  return muted;
-}
-
-function subscribeMuted(cb: () => void) {
-  muteListeners.add(cb);
-  return () => {
-    muteListeners.delete(cb);
-  };
-}
-
-/** Reactive hook for Ralph's mute state (pauses 6-min auto check-ins & silences TTS/SFX). */
-export function useRalphMuted(): [boolean, (next: boolean) => void] {
-  const isMuted = useSyncExternalStore(subscribeMuted, isRalphMuted, () => false);
-  return [isMuted, setRalphMuted];
-}
 
 export function ttsSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -52,8 +17,8 @@ export function speak(text: string, lang: string, onEnd: () => void): () => void
     finished = true;
     onEnd();
   };
-  if (muted || !ttsSupported()) {
-    const t = setTimeout(done, muted ? 400 : readingTimeMs(text));
+  if (!ttsSupported()) {
+    const t = setTimeout(done, readingTimeMs(text));
     return () => clearTimeout(t);
   }
   window.speechSynthesis.cancel();

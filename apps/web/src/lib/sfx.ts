@@ -3,12 +3,11 @@
  * Zero external asset dependencies; fails silently if audio is blocked.
  */
 
-import { isRalphMuted } from './speech';
 
 let ctx: AudioContext | null = null;
 
 function getCtx(): AudioContext | null {
-  if (typeof window === 'undefined' || isRalphMuted()) return null;
+  if (typeof window === 'undefined') return null;
   if (!ctx) {
     const Ctor =
       window.AudioContext ??

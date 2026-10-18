@@ -166,8 +166,8 @@ export function KioskApp() {
     <main className="min-h-full bg-bg">
       <Routes>
         <Route path="waiting" element={<WaitingHub />} />
-        <Route path="games/firefly" element={<FireflyTap onFinish={() => {}} />} />
-        <Route path="games/cyber" element={<CyberCircuit onFinish={() => {}} />} />
+        <Route path="games/firefly" element={<FireflyTap />} />
+        <Route path="games/cyber" element={<CyberCircuit />} />
         <Route path="companion" element={<Companion />} />
         <Route path="*" element={<KioskFlow />} />
       </Routes>

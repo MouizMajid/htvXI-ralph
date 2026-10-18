@@ -61,7 +61,7 @@ if (!env.DATABASE_URL) {
     else bad('TimescaleDB extension not installed');
     const tables = await sql<{ t: string }[]>`
       SELECT table_name AS t FROM information_schema.tables
-      WHERE table_schema = 'public' AND table_name IN ('patients','visits','checkins','game_events')`;
+      WHERE table_schema = 'public' AND table_name IN ('patients','visits','checkins','flags')`;
     if (tables.length === 4) ok('migrations applied (core tables exist)');
     else console.log(`  · migrations not applied yet — run \`pnpm db:migrate\``);
   } catch (e) {

@@ -177,6 +177,70 @@ describe.skipIf(!process.env.DATABASE_URL)('visit API (Tiger)', () => {
     });
   });
 
+  describe('waiting room: chat and check-ins', () => {
+    let id: string;
+    const chat = (message: string) =>
+      call('POST', `/visits/${id}/companion`, { message, history: [], first_name: 'TEST-Chat', age_years: 8 });
+
+    beforeAll(async () => {
+      id = await newVisit('TEST-Chat', 8);
+      await call('POST', `/visits/${id}/complaint`, { complaint: 'tummy' });
+    });
+
+    it("stores the chat as the child's words and Ralph's reply; records no feeling", async () => {
+      const res = await chat('I like dinosaurs, my favourite is the T-rex');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ reply: null, wants_quiet: false, offer_checkin: false }); // no Gemini → kiosk fallback
+      expectNoAlertLeak(res.raw);
+      const { body } = await call('GET', `/staff/visits/${id}`);
+      expect(body.turns.at(-1)).toMatchObject({
+        node_id: 'companion',
+        speaker: 'child',
+        text_en: 'I like dinosaurs, my favourite is the T-rex',
+      });
+      expect(body.checkins).toEqual([]);
+    });
+
+    it('"I feel worse" offers the tap check-in instead of recording a feeling', async () => {
+      const res = await chat('I feel worse');
+      expect(res.body.offer_checkin).toBe(true);
+      const { body } = await call('GET', `/staff/visits/${id}`);
+      expect(body.checkins).toEqual([]);
+      expect(body.alerts).toEqual([]);
+    });
+
+    it('worrying words in chat raise a red flag (code decides)', async () => {
+      await chat('my chest hurts a bit');
+      const { body } = await call('GET', `/staff/visits/${id}`);
+      expect(body.alerts.map((a: any) => a.key)).toEqual(['red:said:chest_pain']);
+    });
+
+    it('a disclosure in chat gets the fixed reply and a staff-only alert', async () => {
+      const res = await chat('my stepdad hits me');
+      expect(res.body.reply).toBe('Thank you for telling me. A nurse will come talk with you.');
+      expectNoAlertLeak(res.raw);
+      const { body } = await call('GET', `/staff/visits/${id}`);
+      expect(body.alerts.map((a: any) => a.kind)).toContain('safeguarding');
+    });
+
+    it('two unanswered check-ins raise "not responding"; status schedules the next one', async () => {
+      await call('POST', `/visits/${id}/parent`, { answers: {} });
+      for (let i = 0; i < 2; i++) {
+        expect((await call('POST', `/visits/${id}/checkins`, { feeling: 'no_response' })).status).toBe(200);
+      }
+      const { body } = await call('GET', `/staff/visits/${id}`);
+      expect(body.alerts.map((a: any) => a.key)).toContain('unresp:2');
+      const status = (await call('GET', `/visits/${id}/status`)).body;
+      expect(Date.parse(status.next_checkin_at)).toBeGreaterThan(Date.now());
+    });
+
+    it('rejects chat for unknown or malformed visits', async () => {
+      const body = { message: 'hi', history: [], age_years: 8 };
+      expect((await call('POST', '/visits/demo/companion', body)).status).toBe(400);
+      expect((await call('POST', '/visits/00000000-0000-4000-8000-000000000000/companion', body)).status).toBe(404);
+    });
+  });
+
   describe('validation', () => {
     let id: string;
     beforeAll(async () => {

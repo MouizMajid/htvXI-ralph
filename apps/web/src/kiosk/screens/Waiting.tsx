@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Lang } from '@ralph/shared';
 import { kioskApi } from '../../lib/api';
@@ -7,8 +7,8 @@ import { WaitingHub } from './WaitingHub';
 
 /**
  * Waits to be called in (polls visit status) while giving the child access to
- * the WaitingHub (Firefly Tap, Cyber Circuit: Firewall Hacker, Companion chat,
- * and the 12-minute automatic check-in with Mute button).
+ * the WaitingHub (games, chat with Ralph) and Ralph's check-ins, which the server schedules
+ * (`next_checkin_at`) and the hub shows at a natural break.
  */
 export function Waiting({
   visitId,
@@ -23,12 +23,14 @@ export function Waiting({
   lang?: Lang;
   onCalledIn: () => void;
 }) {
-  const { data } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ['visit-status', visitId],
     queryFn: () => kioskApi.status(visitId),
     refetchInterval: LIVE_POLL_MS,
     enabled: Boolean(visitId && visitId !== 'demo'),
   });
+
+  const onCheckinSaved = useCallback(() => void refetch(), [refetch]);
 
   useEffect(() => {
     if (data && data.status !== 'waiting') onCalledIn();
@@ -40,6 +42,8 @@ export function Waiting({
       initialName={childName || 'Maya'}
       initialAge={ageYears}
       language={lang}
+      nextCheckinAt={data?.next_checkin_at ?? null}
+      onCheckinSaved={onCheckinSaved}
     />
   );
 }
