@@ -65,5 +65,73 @@ export interface NodeView {
 /** Which fixed line Ralph says after an answer; the kiosk maps it to translated text + audio. */
 export type ReplyKey = 'thanks' | 'safeguarding_reply';
 
+// ---------- Staff dashboard responses (GET /api/staff/queue, /api/staff/visits/:id) ----------
+
+export interface StaffQueueAlert {
+  id: number;
+  kind: AlertKind;
+  reason: string;
+  acknowledged: boolean;
+}
+
+export interface StaffQueueItem {
+  id: string;
+  first_name: string;
+  age_years: number;
+  language: Lang;
+  arrived_at: string;
+  status: VisitStatus;
+  parent_mode: boolean;
+  chief_complaint: Complaint | null;
+  /** The child's first words (typed/spoken), in English. */
+  complaint_words_en: string | null;
+  open_alerts: number;
+  alerts: StaffQueueAlert[];
+}
+
+export interface StaffTurn {
+  id: number;
+  at: string;
+  /** Tree question id, or 'companion' for waiting-room chat. */
+  node_id: string | null;
+  speaker: Speaker;
+  question: string | null;
+  text_original: string | null;
+  text_en: string | null;
+  slot: string | null;
+  slot_value: SlotValue;
+  input: 'tap' | 'voice' | 'text' | 'skip' | null;
+}
+
+export interface StaffAlert {
+  id: number;
+  at: string;
+  kind: AlertKind;
+  key: string;
+  reason: string;
+  acknowledged_at: string | null;
+}
+
+export interface StaffVisitDetail {
+  visit: {
+    id: string;
+    first_name: string;
+    age_years: number;
+    language: Lang;
+    arrived_at: string;
+    status: VisitStatus;
+    parent_mode: boolean;
+    chief_complaint: Complaint | null;
+    tree_id: string | null;
+    slots: SlotMap;
+    parent_answers: Record<string, unknown>;
+    parent_confirmed_at: string | null;
+    called_in_at: string | null;
+  };
+  turns: StaffTurn[];
+  checkins: { at: string; feeling: Feeling; pain_face: number | null; note_en?: string | null }[];
+  alerts: StaffAlert[];
+}
+
 /** Children under this age use parent mode (parent answers, no games). */
 export const PARENT_MODE_MAX_AGE = 4;

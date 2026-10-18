@@ -42,10 +42,18 @@
   --color-body-selected: #e0607e;
 
   /* staff status (colour-blind-safe; always paired with a text label) */
-  --color-success: #2e7d5b; /* stable */
-  --color-warning: #c77c02; /* watch */
-  --color-danger: #b3261e; /* escalate / alerts */
+  --color-success: #2e7d5b; /* "better", acknowledged */
+  --color-warning: #c77c02; /* "getting worse", "not responding" */
+  --color-danger: #b3261e; /* red flags */
   --color-staff-bg: #f6f7f9;
+  --color-staff-line: #e2e6eb; /* card borders, dividers */
+  --color-staff-select: #e8f0fb; /* selected row */
+  --color-danger-soft: #fdeceb;
+  --color-warning-soft: #fdf3e2;
+  --color-success-soft: #e7f4ee;
+  /* safeguarding: deliberately unlike the other alerts (staff-only) */
+  --color-safeguard: #5b3a9a;
+  --color-safeguard-soft: #f1ecf9;
 
   /* game: Firefly Tap (night sky) */
   --color-night: #2a3168;

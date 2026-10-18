@@ -6,7 +6,6 @@ import './i18n';
 import './index.css';
 import { KioskApp } from './kiosk/KioskApp';
 import { Dashboard } from './staff/Dashboard';
-import { PatientView } from './staff/PatientView';
 import { ArtGallery } from './dev/ArtGallery';
 
 const queryClient = new QueryClient();
@@ -17,8 +16,9 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/kiosk/*" element={<KioskApp />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/staff/visit/:id" element={<PatientView />} />
+          <Route path="/staff" element={<Dashboard />} />
+          <Route path="/staff/visit/:id" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Navigate to="/staff" replace />} />
           <Route path="/art" element={<ArtGallery />} />
           <Route path="*" element={<Navigate to="/kiosk" replace />} />
         </Routes>
