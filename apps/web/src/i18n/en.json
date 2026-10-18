@@ -12,7 +12,9 @@
     "title": "Hi grown-up! Who's here today?",
     "name": "Child's first name",
     "age": "Age (years)",
+    "ageError": "Age not valid for this pediatric clinic.",
     "weight": "Weight in kg (optional)",
+    "weightError": "Invalid weight.",
     "next": "Next",
     "parentModeNote": "Under 4? You'll answer for them, and Ralph will help."
   },
