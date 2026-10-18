@@ -82,9 +82,8 @@
 }
 
 html,
-body,
-#root {
-  height: 100%;
+body {
+  min-height: 100%;
 }
 
 body {
@@ -92,6 +91,11 @@ body {
   color: var(--color-ink);
   background: var(--color-bg) url('/paper-bg.jpg') center top / cover fixed no-repeat;
   -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+  background: var(--color-bg) url('/paper-bg.jpg') center top / cover fixed no-repeat;
 }
 
 h1,

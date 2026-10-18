@@ -187,7 +187,7 @@ export function CyberCircuit({ onRoundStart, onRoundEnd, onExit }: CyberCircuitP
   const badge = useMemo(() => `AGENT-RALPH-${Math.floor(1000 + Math.random() * 9000)}`, []);
 
   return (
-    <section className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-between gap-4 bg-cyber-bg p-4 text-cyber-text sm:p-6">
+    <section className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-between gap-4 bg-transparent p-4 text-ink sm:p-6">
       <header className="flex items-center justify-between rounded-card border border-cyber-grid bg-cyber-panel px-5 py-3">
         <div className="flex items-center gap-3">
           <Ralph pose={stage === 'congrats_boot' || stage === 'done' ? 'celebrate' : glitching ? 'gentle' : 'happy'} className="size-14" />
