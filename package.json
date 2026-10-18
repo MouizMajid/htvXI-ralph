@@ -13,8 +13,9 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "check": "pnpm --filter @ralph/api check",
-    "db:migrate":"pnpm --filter @ralph/api db:migrate",
-    "db:seed": "pnpm --filter @ralph/api db:seed"
+    "db:migrate": "pnpm --filter @ralph/api db:migrate",
+    "db:seed": "pnpm --filter @ralph/api db:seed",
+    "tts:warm": "pnpm --filter @ralph/api tts:warm"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

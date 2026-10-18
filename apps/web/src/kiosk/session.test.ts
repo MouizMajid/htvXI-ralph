@@ -40,6 +40,23 @@ describe('kiosk session reducer', () => {
     expect(reducer(s, { type: 'REPLY_DONE' }).reply).toBeNull();
   });
 
+  it("a spoken answer keeps what was heard and Ralph's own line until shown", () => {
+    const s = run([
+      { type: 'COMPLAINT_SET', complaint: 'tummy', node: node('a') },
+      { type: 'ANSWERED', value: 'yes', next: node('b'), reply: 'thanks', line: 'Oh no, poor tummy!', heard: 'yeah I did' },
+    ]);
+    expect(s).toMatchObject({ step: 'question', line: 'Oh no, poor tummy!', heard: 'yeah I did' });
+    expect(s.answered.at(-1)).toEqual({ node: node('a'), value: 'yes' });
+    expect(reducer(s, { type: 'REPLY_DONE' })).toMatchObject({ reply: null, line: null, heard: null });
+  });
+
+  it('an unclear spoken answer stays on the same question and asks to tap', () => {
+    const asking = run([{ type: 'COMPLAINT_SET', complaint: 'tummy', node: node('a') }, { type: 'REQUEST' }]);
+    const s = reducer(asking, { type: 'HEARD_UNCLEAR', heard: 'um maybe', reply: 'try_tapping' });
+    expect(s).toMatchObject({ step: 'question', busy: false, reply: 'try_tapping', heard: 'um maybe', answered: [] });
+    expect(s.node?.id).toBe('a');
+  });
+
   it('fails soft: an error keeps the child on the same screen', () => {
     const asking = run([{ type: 'COMPLAINT_SET', complaint: 'tummy', node: node('a') }, { type: 'REQUEST' }]);
     const s = reducer(asking, { type: 'FAILED' });

@@ -14,6 +14,15 @@ const EnvSchema = z.object({
     .string()
     .default('true')
     .transform((v) => v === 'true'),
+  /**
+   * Generate Ralph's voice on demand during visits (paid Gemini tier). Off by default: the free
+   * tier allows ~10 TTS requests/day, so only pre-generated lines (`pnpm tts:warm`) play and
+   * everything else uses the browser's voice.
+   */
+  TTS_ON_DEMAND: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
   /** Staff sign-in accounts: `badge:pin:Display Name` entries separated by `;`. Synthetic people only. */
   STAFF_ACCOUNTS: z.string().default(''),
   /** Signs staff session cookies. Long random string; changing it signs everyone out. */

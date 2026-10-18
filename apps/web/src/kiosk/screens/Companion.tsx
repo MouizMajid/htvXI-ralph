@@ -4,7 +4,9 @@ import { COMPANION_QUIET_AFTER_MS, FALLBACK_TOPICS, fallbackReply, soundsWorse, 
 import { Ralph } from '../components/Ralph';
 import type { RalphPose } from '../art';
 import { companionTurn } from '../../lib/kioskApi';
-import { listenOnce, speak, sttSupported } from '../../lib/speech';
+import { kioskApi } from '../../lib/api';
+import { speak } from '../../lib/speech';
+import { TalkButton } from '../components/TalkButton';
 
 /**
  * Chat with Ralph while waiting — company, not assessment.
@@ -54,7 +56,6 @@ export function Companion({
 
   const turnIdxRef = useRef(0);
   const cancelTtsRef = useRef<(() => void) | null>(null);
-  const stopSttRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     onIdleChange?.(mode === 'awaiting_child' || mode === 'quiet');
@@ -74,7 +75,6 @@ export function Companion({
     ralphSay(openingLine);
     return () => {
       cancelTtsRef.current?.();
-      stopSttRef.current?.();
       onIdleChange?.(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,22 +116,17 @@ export function Companion({
     [ageYears, firstName, language, onRequestCheckin, ralphSay, turns, visitId],
   );
 
-  const handleMicToggle = () => {
-    if (listening) {
-      stopSttRef.current?.();
-      setListening(false);
-      return;
+  /** Chat microphone: Gemini transcribes the clip, then it's sent like a typed message. */
+  const handleAudio = async (audio: Blob) => {
+    try {
+      const { text } = await kioskApi.transcribe(visitId, audio);
+      if (text) return void (await sendChildMessage(text, 'voice'));
+    } catch {
+      /* fall through */
     }
-    cancelTtsRef.current?.();
-    setListening(true);
-    stopSttRef.current = listenOnce(
-      language,
-      (transcript) => {
-        setListening(false);
-        void sendChildMessage(transcript, 'voice');
-      },
-      () => setListening(false),
-    );
+    const line = t('companion.didntCatch');
+    setTurns((prev) => [...prev, { speaker: 'ralph', text: line }]);
+    ralphSay(line);
   };
 
   const pose: RalphPose = listening
@@ -214,6 +209,8 @@ export function Companion({
         )}
       </div>
 
+      <TalkButton onAudio={handleAudio} onListeningChange={setListening} disabled={mode === 'thinking'} />
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -221,17 +218,6 @@ export function Companion({
         }}
         className="flex items-center gap-2"
       >
-        {sttSupported() && (
-          <button
-            type="button"
-            onClick={handleMicToggle}
-            className={`min-h-16 rounded-pill px-6 text-lg font-extrabold shadow-soft active:scale-95 ${
-              listening ? 'bg-no text-on-primary' : 'bg-primary text-on-primary'
-            }`}
-          >
-            {listening ? `🛑 ${t('companion.stop')}` : `🎤 ${t('companion.talk')}`}
-          </button>
-        )}
         <input
           type="text"
           value={draft}

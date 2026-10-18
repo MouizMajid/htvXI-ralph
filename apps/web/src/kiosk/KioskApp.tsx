@@ -5,6 +5,7 @@ import { Route, Routes } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Complaint as ComplaintId, Lang } from '@ralph/shared';
 import { kioskApi } from '../lib/api';
+import { unlockAudio } from '../lib/speech';
 import { initialSession, reducer, type SavedSession } from './session';
 import { Welcome } from './screens/Welcome';
 import { Language } from './screens/Language';
@@ -49,6 +50,13 @@ function KioskFlow() {
     if (saved) dispatch({ type: 'RESUME_WAITING', ...saved });
   }, []);
 
+  // Browsers only allow sound after a tap: unlock Ralph's voice on the first one.
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    window.addEventListener('pointerdown', unlock, { once: true });
+    return () => window.removeEventListener('pointerdown', unlock);
+  }, []);
+
   useEffect(() => {
     void i18n.changeLanguage(s.lang);
     document.documentElement.lang = s.lang;
@@ -88,6 +96,18 @@ function KioskFlow() {
     const body = value === null ? { node_id: s.node.id, skip: true } : { node_id: s.node.id, value };
     const r = await call(() => kioskApi.answer(s.visitId!, body));
     if (r) dispatch({ type: 'ANSWERED', value, next: r.next, reply: r.reply });
+  };
+
+  /** A spoken answer: the server transcribes + interprets it, and code checks the value. */
+  const answerSpoken = async (audio: Blob) => {
+    if (!s.node) return;
+    const r = await call(() => kioskApi.answerAudio(s.visitId!, s.node!.id, audio));
+    if (!r) return;
+    if (r.accepted) {
+      dispatch({ type: 'ANSWERED', value: r.value, next: r.next, reply: r.reply, line: r.line, heard: r.heard });
+    } else {
+      dispatch({ type: 'HEARD_UNCLEAR', heard: r.heard, reply: r.reply });
+    }
   };
 
   const parentConfirm = async (p: ParentSubmit) => {
@@ -131,6 +151,9 @@ function KioskFlow() {
           node={s.node}
           lang={s.lang}
           reply={s.reply}
+          line={s.line}
+          heard={s.heard}
+          onSpoken={answerSpoken}
           onReplyDone={replyDone}
           onAnswer={answer}
           busy={s.busy}

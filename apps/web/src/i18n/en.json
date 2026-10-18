@@ -179,10 +179,9 @@
     "funPrefix": "Let's talk about something fun!",
     "wantRest": "I want to rest",
     "restMessage": "I'm tired, I want to rest for a bit.",
-    "talk": "Talk",
-    "stop": "Stop",
     "inputPlaceholder": "Type or tap to talk to Ralph…",
-    "send": "Send"
+    "send": "Send",
+    "didntCatch": "I didn't quite catch that. Can you say it again, or type it?"
   },
   "checkin": {
     "ask": "Hey, how are you feeling now?",
@@ -191,5 +190,13 @@
     "worse": "Worse",
     "face": "Which face shows how you feel?",
     "skipFace": "Skip"
+  },
+  "talk": {
+    "start": "Tap and tell Ralph",
+    "listening": "I'm listening… tap when you're done ({{seconds}})",
+    "sending": "Thinking…",
+    "heard": "I heard: “{{text}}”",
+    "tryTapping": "Hmm, can you tap the picture instead?",
+    "replay": "Hear it again"
   }
 }

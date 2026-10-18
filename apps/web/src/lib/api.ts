@@ -5,6 +5,7 @@ import type {
   NodeView,
   ParentAnswers,
   ReplyKey,
+  SpokenAnswerResponse,
   StaffQueueItem,
   StaffSession,
   StaffVisitDetail,
@@ -58,6 +59,21 @@ export const kioskApi = {
     post<{ ok: true }>(`/visits/${visitId}/checkins`, body),
 
   status: (visitId: string) => api<VisitStatus>(`/visits/${visitId}/status`),
+
+  /** A spoken answer to the current question (WAV from lib/recorder). */
+  answerAudio: (visitId: string, nodeId: string, audio: Blob) => {
+    const form = new FormData();
+    form.append('node_id', nodeId); // fields before the file: the server reads parts in order
+    form.append('audio', audio, 'answer.wav');
+    return api<SpokenAnswerResponse>(`/visits/${visitId}/turns/audio`, { method: 'POST', body: form });
+  },
+
+  /** Chat microphone: audio → text. */
+  transcribe: (visitId: string, audio: Blob) => {
+    const form = new FormData();
+    form.append('audio', audio, 'chat.wav');
+    return api<{ text: string | null }>(`/visits/${visitId}/transcribe`, { method: 'POST', body: form });
+  },
 };
 
 // ---------- Staff dashboard (see api-and-ai skill) ----------

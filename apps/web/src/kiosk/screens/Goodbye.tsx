@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shell } from '../components/Shell';
+import { useSay } from '../../lib/speech';
 import { BigButton } from '../components/BigButton';
 import { Icon } from '../components/Icon';
 
@@ -9,7 +10,8 @@ const FALLBACK = ['⭐', '🦝', '🌈', '🚀', '🦖', '🌻'];
 
 /** RALPH's job ends here — the nurse takes over in person. */
 export function Goodbye({ childName, onDone }: { childName: string; onDone: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  useSay(t('goodbye.title', { name: childName }), i18n.language);
   const n = useMemo(() => Math.floor(Math.random() * STICKERS), []);
   return (
     <Shell pose="celebrate" big line={t('goodbye.title', { name: childName })}>

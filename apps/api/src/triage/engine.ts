@@ -13,11 +13,13 @@ import {
   type NodeView,
   type ParentAnswers,
   type ReplyKey,
+  type SpokenAnswerResponse,
   type SlotValue,
   type Tree,
 } from '@ralph/shared';
 import * as db from '../db/visits.js';
 import { HttpError, notFound } from '../http.js';
+import { interpretTurn } from '../ai/interpret.js';
 
 export function nodeView(tree: Tree, id: string | null): NodeView | null {
   if (!id) return null;
@@ -103,6 +105,82 @@ export async function answer(visitId: string, a: AnswerInput): Promise<{ next: N
   await refreshAlerts(visitId, sgAlert ? [sgAlert] : [], a.at);
 
   return { next: nodeView(tree, next), reply: sgAlert ? 'safeguarding_reply' : 'thanks' };
+}
+
+/** Below this, a spoken answer isn't trusted — the child is asked to tap instead. */
+export const MIN_VOICE_CONFIDENCE = 0.6;
+
+/**
+ * A spoken answer: Gemini reads the transcript, code validates the value (normalizeAnswer).
+ * Accepted → saved exactly like a tap (input 'voice', with the child's words + English).
+ * Not accepted → the words are kept for the nurse, alerts still run, and the child taps instead.
+ */
+export async function answerSpoken(
+  visitId: string,
+  s: { node_id: string; transcript: string | null },
+): Promise<SpokenAnswerResponse> {
+  const visit = await loadVisit(visitId);
+  const tree = treeOf(visit);
+  if (s.node_id !== visit.current_node) {
+    throw new HttpError(409, `expected an answer for "${visit.current_node ?? 'nothing (tree finished)'}"`);
+  }
+  const node = getNode(tree, s.node_id);
+  const transcript = s.transcript?.trim() || null;
+  const sameQuestion = nodeView(tree, s.node_id);
+  if (!transcript) return { heard: null, accepted: false, value: null, next: sameQuestion, reply: 'try_tapping', line: null };
+
+  const it = await interpretTurn({ node, age: visit.age_years, lang: visit.language, transcript });
+  const textEn = visit.language === 'en' ? transcript : (it?.text_en ?? null);
+  const freeSpeech = node.answer_type === 'free_speech';
+  const value = normalizeAnswer(node, freeSpeech ? transcript : it?.slot_value);
+  const accepted =
+    value !== null && (freeSpeech || (it !== null && !it.needs_clarification && it.confidence >= MIN_VOICE_CONFIDENCE));
+
+  if (accepted) {
+    const res = await answer(visitId, {
+      node_id: s.node_id,
+      value,
+      input: 'voice',
+      text_original: transcript,
+      text_en: textEn ?? undefined,
+      confidence: it?.confidence,
+      llm_safeguarding: it?.safeguarding_concern,
+    });
+    return {
+      heard: transcript,
+      accepted: true,
+      value,
+      next: res.next,
+      reply: res.reply,
+      line: res.reply === 'thanks' ? (it?.ralph_reply ?? null) : null,
+    };
+  }
+
+  // Not understood: keep their words, still run safeguarding + the alert rules on them.
+  await db.saveHeardTurn(visitId, {
+    node_id: s.node_id,
+    question: node.ask,
+    speaker: visit.parent_mode ? 'parent' : 'child',
+    text_original: transcript,
+    text_en: textEn,
+  });
+  const sgAlert = safeguardingAlert(
+    detectSafeguarding({
+      transcript,
+      lang: visit.language,
+      text_en: textEn ?? undefined,
+      llm_concern: it?.safeguarding_concern,
+    }),
+  );
+  await refreshAlerts(visitId, sgAlert ? [sgAlert] : []);
+  return {
+    heard: transcript,
+    accepted: false,
+    value: null,
+    next: sameQuestion,
+    reply: sgAlert ? 'safeguarding_reply' : 'try_tapping',
+    line: null,
+  };
 }
 
 export interface ParentInput {

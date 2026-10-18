@@ -63,7 +63,22 @@ export interface NodeView {
 }
 
 /** Which fixed line Ralph says after an answer; the kiosk maps it to translated text + audio. */
-export type ReplyKey = 'thanks' | 'safeguarding_reply';
+export type ReplyKey = 'thanks' | 'safeguarding_reply' | 'try_tapping';
+
+/** Result of a spoken answer (POST /visits/:id/turns/audio). Never includes alerts. */
+export interface SpokenAnswerResponse {
+  /** What we heard (transcript), shown to the child. null if nothing usable was heard. */
+  heard: string | null;
+  /** true → saved like a tap and the tree moved on; false → ask the child to tap. */
+  accepted: boolean;
+  /** The validated answer that was saved (accepted only). */
+  value: SlotValue;
+  /** Next question (accepted), or the same question again (not accepted). */
+  next: NodeView | null;
+  reply: ReplyKey;
+  /** Ralph's own short reaction in the child's language (accepted voice answers only). */
+  line: string | null;
+}
 
 /** Who is signed in to the staff dashboard (badge + PIN sign-in). */
 export interface StaffSession {
