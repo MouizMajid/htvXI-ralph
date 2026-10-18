@@ -264,7 +264,9 @@ export function FireflyTap({ ageYears = 6, onRoundStart, onRoundEnd, onExit }: F
                   onPointerDown={handleFlyPointerDown}
                   initial={{ scale: 0.2, opacity: 0 }}
                   animate={{ scale: [1, 1.08, 1], y: [0, -7, 0], opacity: 1 }}
-                  exit={{ scale: 1.5, opacity: 0 }}
+                  // Own transition: otherwise the bob's `repeat: Infinity` applies to the exit too,
+                  // it never finishes, and caught/missed fireflies pile up on screen as ghosts.
+                  exit={{ scale: 1.5, opacity: 0, transition: { duration: 0.25, repeat: 0 } }}
                   transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
                   style={{ left: `${fly.x}%`, top: `${fly.y}%` }}
                   className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-pill ${flySizeClass} flex items-center justify-center`}
