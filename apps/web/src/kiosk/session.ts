@@ -29,6 +29,10 @@ export interface Session {
   answered: AnsweredQuestion[];
   /** Ralph's reaction to the last answer, shown briefly before the next question. */
   reply: ReplyKey | null;
+  /** Ralph's own words for that reaction (spoken answers), instead of the fixed line. */
+  line: string | null;
+  /** What we heard the child say (spoken answers), shown back to them. */
+  heard: string | null;
   busy: boolean;
   /** Fail soft: shown as "Oops, let's try tapping!" — the child just taps again. */
   error: boolean;
@@ -41,7 +45,8 @@ export type Action =
   | { type: 'FAILED' }
   | { type: 'VISIT_CREATED'; visitId: string; childName: string; parentMode: boolean }
   | { type: 'COMPLAINT_SET'; complaint: Complaint; node: NodeView }
-  | { type: 'ANSWERED'; value: unknown; next: NodeView | null; reply: ReplyKey }
+  | { type: 'ANSWERED'; value: unknown; next: NodeView | null; reply: ReplyKey; line?: string | null; heard?: string | null }
+  | { type: 'HEARD_UNCLEAR'; heard: string | null; reply: ReplyKey }
   | { type: 'REPLY_DONE' }
   | { type: 'PARENT_DONE' }
   | { type: 'CALLED_IN' }
@@ -58,6 +63,8 @@ export const initialSession: Session = {
   node: null,
   answered: [],
   reply: null,
+  line: null,
+  heard: null,
   busy: false,
   error: false,
 };
@@ -92,12 +99,17 @@ export function reducer(s: Session, a: Action): Session {
         busy: false,
         answered,
         reply: a.reply,
+        line: a.line ?? null,
+        heard: a.heard ?? null,
         node: a.next,
         step: a.next ? 'question' : 'parent',
       };
     }
+    case 'HEARD_UNCLEAR':
+      // Same question again; Ralph asks them to tap (or says the safeguarding line).
+      return { ...s, busy: false, reply: a.reply, line: null, heard: a.heard };
     case 'REPLY_DONE':
-      return { ...s, reply: null };
+      return { ...s, reply: null, line: null, heard: null };
     case 'PARENT_DONE':
       return { ...s, busy: false, step: 'waiting' };
     case 'CALLED_IN':

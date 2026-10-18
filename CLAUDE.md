@@ -43,7 +43,7 @@ docs/                pitch, demo script, tracks, privacy, slice plan (for humans
 ```
 
 ## Commands
-`pnpm dev` (web :5173 + api :3001) · `pnpm test` · `pnpm typecheck` · `pnpm build` · `pnpm check` (Gemini + Tiger connectivity) · `pnpm db:migrate` · `pnpm db:seed`. Secrets live in root `.env` (gitignored; template `.env.example`) locally and in the `ralph-api` project's Environment Variables on Vercel.
+`pnpm dev` (web :5173 + api :3001) · `pnpm test` · `pnpm typecheck` · `pnpm build` · `pnpm check` (Gemini + Tiger connectivity) · `pnpm db:migrate` · `pnpm db:seed` · `pnpm tts:warm` (pre-generate Ralph's fixed lines; skips cached ones). Secrets live in root `.env` (gitignored; template `.env.example`) locally and in the `ralph-api` project's Environment Variables on Vercel.
 
 ## Coding conventions
 - TS strict. Shared types in `packages/shared`; it is the contract between web and api.

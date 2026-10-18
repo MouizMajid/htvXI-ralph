@@ -13,11 +13,11 @@ One **slice** at a time. Each slice is one cohesive portion that touches only th
 | 1 | **Conversation + alert core** | `packages/shared` | Full tummy tree; red-flag, getting-worse, not-responding rules; safeguarding phrase check. Vitest: Maya's path, each rule, safeguarding positive + benign | ✅ |
 | 2 | **Visit API + seed** | `apps/api` routes + db, migration `003` cleanup | Create visit, complaint, tap turn, parent answers, check-ins, staff reads, call-in — tested with Fastify `inject` against Tiger; seed creates 6 synthetic background kids (Maya checks in live) | ✅ |
 | 3 | **Kiosk tap flow** | `apps/web/src/kiosk` (not games) | Welcome → language → who's here → complaint → tree (yes/no, choice, body map, faces) → parent confirm → waiting → goodbye on call-in. Reducer unit tests + browser click-through + phone check | 🟡 PR open (needs a real-phone check) |
-| 4 | **Staff dashboard** | `apps/web/src/staff` | Queue (alerts first, then arrival) + patient view (alerts, answers table, conversation, check-ins, call-in), polling 2.5 s. Phone check-in appears on laptop within 3 s | ⬜ |
+| 4 | **Staff dashboard** | `apps/web/src/staff` | Queue (alerts first, then arrival) + patient view (alerts, answers table, conversation, check-ins, call-in), polling 2.5 s. Phone check-in appears on laptop within 3 s | ✅ (Joyce's layout on real data + badge/PIN sign-in) |
 | | **Milestone A — tap-only demo works end to end; deploy** | | | |
-| 5 | **Ralph speaks** | TTS route, pre-gen script, audio player, `<Ralph pose="talk">` sync | Fixed lines play instantly from cache; dynamic lines cached in Tiger; no key → browser voice fallback | ⬜ |
-| 6 | **Ralph listens** | recorder, `/turns/audio`, `apps/api/src/ai` | Hold-to-talk → transcript → interpretation + English translation → next node. Tested with recorded clips; Zod retry + tap fallback; safeguarding OR-logic | ⬜ |
-| 7 | **Waiting room: Firefly Tap + check-ins** | `kiosk/games`, waiting screen, check-in UI | Fun game rounds; check-in due every `CHECKIN_INTERVAL_SEC` appears at end of a round; "worse"/face changes raise getting-worse alerts on the dashboard | ⬜ |
+| 5 | **Ralph speaks** | TTS route, pre-gen script (`pnpm tts:warm`), audio player, `<Ralph pose="talk">` sync | Fixed lines play instantly from the Tiger cache; uncached lines use the browser voice (or Gemini on demand with `TTS_ON_DEMAND=true`) | ✅ |
+| 6 | **Ralph listens** | recorder, `/turns/audio`, `apps/api/src/ai` | Tap-to-talk → transcript → interpretation + English translation → next node. Tested with Gemini stubbed + one live clip; Zod retry + tap fallback; safeguarding OR-logic | ✅ (mic needs a real-device check) |
+| 7 | **Waiting room: Firefly Tap + check-ins** | `kiosk/games`, waiting screen, check-in UI | Fun game rounds; check-in due every `CHECKIN_INTERVAL_SEC` appears at end of a round; "worse"/face changes raise getting-worse alerts on the dashboard | ✅ |
 | 8 | **Demo panel + production** | `DemoPanel`, demo routes, domain | Scripted Maya scenario runs 3× in a row on the production URL | ⬜ |
 | | **Milestone B — Tier 1 done → draft submission** | | | |
 

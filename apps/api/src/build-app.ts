@@ -8,6 +8,7 @@ import { demoRoutes } from './routes/demo.js';
 import { visitRoutes } from './routes/visits.js';
 import { staffRoutes } from './routes/staff.js';
 import { authRoutes } from './routes/auth.js';
+import { voiceRoutes } from './routes/voice.js';
 import { companionRoutes } from './routes/companion.js';
 
 /** Registers plugins + routes on an existing instance (index.ts creates it — Vercel requires that). */
@@ -21,6 +22,7 @@ export async function configureApp(app: FastifyInstance) {
   await app.register(healthRoutes, { prefix: '/api' });
   await app.register(visitRoutes, { prefix: '/api' });
   await app.register(companionRoutes, { prefix: '/api' });
+  await app.register(voiceRoutes, { prefix: '/api' });
   await app.register(authRoutes, { prefix: '/api' });
   await app.register(staffRoutes, { prefix: '/api' });
   if (env.DEMO_MODE) await app.register(demoRoutes, { prefix: '/api/demo' });

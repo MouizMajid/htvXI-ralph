@@ -26,14 +26,15 @@ description: RALPH Fastify API endpoints, dashboard polling, Gemini usage (Ralph
 | POST | `/api/visits` | Create patient + visit (kiosk start) |
 | GET | `/api/visits/:id/status` | Kiosk polls this: `waiting` / `in_room` (→ goodbye screen), check-in due? |
 | POST | `/api/visits/:id/complaint` | Set chief complaint → first node |
-| POST | `/api/visits/:id/turns/audio` | Multipart audio → transcript + interpretation + next node |
+| POST | `/api/visits/:id/turns/audio` | Multipart (`node_id`, then `audio`) → `SpokenAnswerResponse {heard, accepted, value, next, reply, line}` (`routes/voice.ts` → `engine.answerSpoken`) |
+| POST | `/api/visits/:id/transcribe` | Multipart audio → `{text}` (companion chat mic) |
 | POST | `/api/visits/:id/turns/tap` | Tap answer → next node |
 | POST | `/api/visits/:id/parent` | Parent confirm/edit + parent-only answers |
 | POST | `/api/visits/:id/checkins` | Check-in result (better/same/worse/no_response + face) |
 | GET | `/api/staff/queue` | Queue: alerts first, then arrival |
 | GET | `/api/staff/visits/:id` | Patient view: answers, conversation, check-ins, alerts |
 | POST | `/api/staff/visits/:id/actions` | `call_in`, `acknowledge_flag` (logged in `nurse_actions`) |
-| POST | `/api/tts` | `{text, lang}` → `{ url: "/api/tts/<hash>" }` (generates + stores in `tts_cache` if missing) |
+| POST | `/api/tts` | `{text}` → `{ url: "/api/tts/<hash>" }` if cached (`pnpm tts:warm`); else `404` (browser voice) unless `TTS_ON_DEMAND=true`, which generates + stores it |
 | GET | `/api/tts/:hash` | Cached audio bytes, long `Cache-Control` |
 | POST | `/api/demo/*` | Seed, reset, fast-forward, inject "getting worse" (only when `DEMO_MODE=true`) |
 
@@ -47,8 +48,10 @@ The staff side uses **no AI**. Gemini is used for exactly three things:
 2. **Interpret + translate** each turn (`GEMINI_MODEL`, low temperature): map to the node's slot, write Ralph's short reaction, give `text_en`. Contract in the `triage-engine` skill.
 3. **Ralph's voice** (`GEMINI_TTS_MODEL`, `RALPH_VOICE`).
 
-- SDK: `@google/genai`. Model IDs only from env.
+- SDK: `@google/genai` (≥ 2.30). Model IDs only from env. Transcribe + TTS use the **Interactions API** (`ai/voice.ts`); interpretation (`ai/interpret.ts`) and companion chat use `models.generateContent` with JSON output.
+- SDK retries are **off** (`retryOptions.attempts: 1`, `retries: {strategy: 'none'}`): its default backoff turned a quota 429 into a minute-long hang.
 - Every response Zod-validated; retry once, then fall back (tap options / browser `speechSynthesis`).
+- Quota: free tier allows ~10 TTS requests/day per project (limits only visible in AI Studio; reset midnight Pacific). Linking billing (Tier 1) lifts it instantly; costs are cents for a demo.
 - Tree questions + UI strings are pre-translated at build time, never at request time.
 
 ## Prompts (`apps/api/src/ai/prompts.ts`)
@@ -74,4 +77,4 @@ The staff side uses **no AI**. Gemini is used for exactly three things:
 - Every push to a branch gets a preview URL; `main` → production.
 
 ## Env (`.env.example` is the source of truth)
-`GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_STT_MODEL`, `GEMINI_TTS_MODEL`, `RALPH_VOICE`, `DATABASE_URL`, `PUBLIC_BASE_URL`, `CHECKIN_INTERVAL_SEC`, `DEMO_MODE`, `SUPPORTED_LANGS`, `PORT` (local only). `pnpm check` verifies Gemini + Tiger connectivity without printing secrets.
+`GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_STT_MODEL`, `GEMINI_TTS_MODEL`, `RALPH_VOICE`, `DATABASE_URL`, `PUBLIC_BASE_URL`, `CHECKIN_INTERVAL_SEC`, `DEMO_MODE`, `SUPPORTED_LANGS`, `TTS_ON_DEMAND`, `STAFF_ACCOUNTS`, `SESSION_SECRET`, `PORT` (local only). `pnpm tts:warm` pre-generates Ralph's fixed lines into `tts_cache`. `pnpm check` verifies Gemini + Tiger connectivity without printing secrets.

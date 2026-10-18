@@ -113,6 +113,20 @@ export async function saveAnswer(
   });
 }
 
+/**
+ * A spoken answer we heard but couldn't map to an answer (or Gemini was unavailable). Stored so the
+ * nurse sees the child's words; no slot changes and the tree doesn't move.
+ */
+export async function saveHeardTurn(
+  id: string,
+  t: { node_id: string; question: string; speaker: Speaker; text_original: string; text_en: string | null },
+) {
+  const sql = requireDb();
+  await sql`
+    INSERT INTO turns (visit_id, node_id, speaker, question, text_original, text_en, input)
+    VALUES (${id}, ${t.node_id}, ${t.speaker}, ${t.question}, ${t.text_original}, ${t.text_en}, 'voice')`;
+}
+
 /** Parent edit of an earlier answer: overwrite the slot (no node movement), log as a parent turn. */
 export async function saveParentEdit(id: string, e: { node_id: string; question: string; slot: string; value: SlotValue }) {
   const sql = requireDb();

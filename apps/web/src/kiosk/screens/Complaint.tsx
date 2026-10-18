@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { COMPLAINTS, type Complaint as ComplaintId } from '@ralph/shared';
 import { Shell } from '../components/Shell';
+import { useSay } from '../../lib/speech';
 import { BigButton } from '../components/BigButton';
 import { Icon } from '../components/Icon';
 
@@ -17,7 +18,8 @@ export function Complaint({
   error: boolean;
   subline?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  useSay(t('complaint.ask'), i18n.language);
   return (
     <Shell pose={busy ? 'think' : 'listen'} line={t('complaint.ask')} subline={subline} error={error}>
       <div className="grid grid-cols-2 gap-3">
