@@ -98,6 +98,12 @@ body {
   background: var(--color-bg) url('/paper-bg.jpg') center top / cover fixed no-repeat;
 }
 
+.staff-portal {
+  --font-sans: Calibri, 'Segoe UI', Arial, sans-serif;
+  --font-display: Calibri, 'Segoe UI', Arial, sans-serif;
+  font-family: var(--font-sans);
+}
+
 h1,
 h2,
 h3,

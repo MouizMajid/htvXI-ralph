@@ -41,7 +41,7 @@ export function StaffLogin() {
     'w-full rounded-lg border border-staff-line bg-surface px-3 py-2.5 text-lg tracking-wide focus:border-secondary focus:outline-none';
 
   return (
-    <main className="flex min-h-full items-center justify-center bg-transparent px-4 py-10 text-ink">
+    <main className="staff-portal flex min-h-full items-center justify-center bg-transparent px-4 py-10 text-ink">
       <form onSubmit={submit} className="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-staff-line bg-surface p-6">
         <div>
           <p className="text-xs font-semibold tracking-widest text-ink-muted uppercase">RALPH · Staff</p>
