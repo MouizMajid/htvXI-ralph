@@ -24,20 +24,55 @@ Kids in paediatric ERs and walk-in clinics wait a long time, often can't explain
 5. Dashboard: Maya jumps to the top with **"Getting worse — pain went from 2 → 4; said tummy feels worse."**
 6. Nurse presses **Call in**. Ralph says goodbye and gives Maya a sticker. The nurse walks over: "Ralph told me your tummy hurts. Can you show me where?"
 
-Plus a 30 s **multilingual** moment: a second child checks in in Hindi or Mandarin; Ralph speaks that language; the dashboard shows the English translation next to the child's original words.
+Plus a 30 s **multilingual** moment: a second child answers in Hindi or Mandarin (by voice or in the chat); the dashboard shows the English translation next to the child's original words. (Questions are English-only for now, so don't say Ralph asks in Hindi.)
 
 Run the kiosk on a phone/iPad and the dashboard on a laptop side by side.
 
-## Tracks
-| Track | How RALPH qualifies |
-|---|---|
-| Healthcare Innovation & Well-being | Gives kids a voice in the waiting room and gets their story to the nurse first |
-| AI for Social Impact | Kids who can't explain symptoms to strangers; multilingual access for newcomer families; AI used only for understanding and translating — humans make every clinical call |
-| PointClickCare — Catch It Early | Regular check-ins turn "I feel worse" into an early, **explained** alert ("pain went from 2 → 4") instead of something nobody hears |
-| MLH Best Use of Gemini API | Transcribe (child speech), answer interpretation, translation to English, Ralph's voice (TTS) in 5 languages |
-| MLH Best Use of Tiger Data | Relational visits/conversations + a check-ins hypertable; continuous aggregate for each child's check-in timeline |
-| MLH Best Domain Name (GoDaddy Registry) | Custom domain → Vercel deployment (confirm eligible TLDs) |
-| MLH DEV Writing Challenge (post-event) | Write-up: AI on the child side only, deterministic alerts, serverless on Vercel + Tiger |
+## Tracks — why we should win each one
+
+Each track: the one-line claim for the slide, the proof (what's really built, so judges can check it), and what to show live. ⚠️ marks a claim we can't make yet.
+
+### Healthcare Innovation & Well-being
+**Slide line:** Kids can't always explain what's wrong to a stranger in scrubs — RALPH gets the child's own story to the nurse *before* the nurse walks over, and keeps listening while they wait.
+- **Proof:** full kiosk flow (tap or speak every answer), parent confirms/corrects, nurse dashboard with the child's whole conversation in English next to their original words, check-ins every few minutes, call-in ends RALPH's job.
+- **Responsible by design:** no diagnosis, no triage, no scores. The nurse decides; RALPH only gathers and flags. Synthetic data only.
+- **Show:** Maya's demo end to end; the nurse's opening line "Ralph told me your tummy hurts…".
+
+### AI for Social Impact
+**Slide line:** AI helps a scared child be understood — in their language — and never decides anything about their care.
+- **Proof:** a child can answer by voice in English, Hindi, Spanish, French or Mandarin; Gemini transcribes and translates it faithfully into English for the nurse ("my tummy hurts really bad", not "severe abdominal pain").
+- **The AI's limits are in code:** alerts and safeguarding are deterministic rules; Gemini's answers are validated before use; if Gemini is down or unsure, the child just taps — nothing breaks, nobody is penalised for being hard to understand.
+- **Safeguarding:** a possible-harm disclosure gets one fixed, calm line (pre-translated, never AI-written) and a private staff flag — two independent detectors, either one fires.
+- ⚠️ Ralph's *questions* and screen text are English-only for now; say "children can answer in 5 languages", not "Ralph speaks 5 languages".
+
+### PointClickCare — Catch It Early
+**Slide line:** A child who says "I feel worse" in a waiting room usually goes unheard. RALPH turns it into an early, explained heads-up.
+- **Proof:** Ralph checks in every few minutes at a natural break (between game rounds / in the chat): better, same or worse + a faces scale.
+- **Explained alerts, not scores:** "Pain went from 2 → 4", "Said they feel worse at 2 check-ins in a row", "Didn't answer Ralph's last 2 check-ins", plus red flags the child says anywhere ("my chest really hurts", "I threw up blood").
+- **Queue:** children with unacknowledged alerts float to the top; the nurse acknowledges each one (logged with who and when).
+- **Show:** demo fast-forward → Maya says "worse" → she jumps to the top of the dashboard with the reason.
+
+### MLH Best Use of Gemini API
+**Slide line:** Gemini is Ralph's ears, his understanding, his translator and his voice — three Gemini models (Flash, Transcribe, TTS), each with a guard-rail.
+- **Ears:** Gemini Transcribe on 15 s push-to-talk clips, with per-language hints and a kid vocabulary (tummy, throw up, ouchie, belly button…).
+- **Understanding:** each spoken answer is mapped to the current question's options as strict JSON (Zod-validated, 8 s budget); plain answers are matched by code first so Gemini only handles the hard ones.
+- **Translator:** every child message is translated into English for the nurse, keeping the child's own phrasing; the waiting-room chat uses Gemini too, with safety rules in code around it.
+- **Voice:** Ralph's lines are Gemini TTS with a fixed voice and style ("a warm, playful raccoon talking slowly to a young child"), generated once and cached in Tiger — instant playback, almost no quota.
+- **Second safety signal:** Gemini's `safeguarding_concern` is OR-ed with our phrase lists.
+
+### MLH Best Use of Tiger Data
+**Slide line:** Tiger holds the whole waiting room: who's here, what each child said, and how each child is trending over time.
+- **Proof (built):** relational core (patients, visits, every conversation turn, alerts, nurse audit trail); check-ins are a **hypertable** (time-series per child); a **real-time continuous aggregate** `checkins_5m` (avg/max pain and "worse" count per child per 5 min, `materialized_only = false` so fresh check-ins count at once).
+- **Serverless-friendly:** Vercel has no disk, so Ralph's voice clips live in Tiger (`tts_cache`, keyed by a hash of the line) and stream from Postgres; alerts use a unique `(visit_id, key)` so re-running the rules never duplicates one; timestamps come from the DB clock.
+- ⚠️ **Gap:** the app doesn't read `checkins_5m` yet — the dashboard lists check-ins with a plain query. To make this claim real, add the **check-in timeline chart** on the nurse's patient view, powered by the continuous aggregate (Tier 2 item; ~1–2 h).
+
+### MLH Best Domain Name (GoDaddy Registry)
+**Slide line:** ralphismyfavtmntturtle.cooking — because Ralph (well, Raph) is everyone's favourite turtle, and something's always cooking in the waiting room.
+- **Proof:** live on Vercel with automatic HTTPS (needed for the microphone).
+- ⚠️ Confirm `.cooking` is on MLH's list of eligible GoDaddy Registry TLDs and whether registering through Porkbun counts.
+
+### MLH DEV Writing Challenge (post-event)
+**Post idea:** "AI on the child's side only": how we kept every clinical decision in deterministic code, made Gemini fail soft (tap fallback, 8 s budget, cached voice), and ran it serverless on Vercel + Tiger.
 
 Not targeting: Solana (blockchain for kids' health data is a privacy negative); Vultr (we deploy on Vercel — free, automatic HTTPS, preview URL per branch).
 
