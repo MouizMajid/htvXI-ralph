@@ -9,10 +9,19 @@ import { deleteVisits } from '../db/visits.js';
 
 const created: string[] = [];
 let app: FastifyInstance;
+/** Signed-in staff cookie (test account), sent with every /staff/* call unless overridden. */
+let staffCookie = '';
 
-async function call(method: 'GET' | 'POST', url: string, payload?: unknown) {
-  const res = await app.inject({ method, url: `/api${url}`, payload: payload as object });
-  return { status: res.statusCode, body: res.json() as any, raw: res.body };
+async function call(method: 'GET' | 'POST', url: string, payload?: unknown, cookie?: string) {
+  const headers = url.startsWith('/staff/') ? { cookie: cookie ?? staffCookie } : undefined;
+  const res = await app.inject({ method, url: `/api${url}`, payload: payload as object, headers });
+  return { status: res.statusCode, body: res.json() as any, raw: res.body, setCookie: res.headers['set-cookie'] };
+}
+
+async function signIn(badge: string, pin: string) {
+  const res = await call('POST', '/staff/login', { badge, pin }, '');
+  const header = Array.isArray(res.setCookie) ? res.setCookie[0] : res.setCookie;
+  return { ...res, cookie: header ? header.split(';')[0]! : '' };
 }
 
 async function newVisit(first_name: string, age_years: number, language = 'en') {
@@ -30,6 +39,7 @@ function expectNoAlertLeak(raw: string) {
 describe.skipIf(!process.env.DATABASE_URL)('visit API (Tiger)', () => {
   beforeAll(async () => {
     app = await buildApp({ logger: false });
+    staffCookie = (await signIn('9001', '1234')).cookie;
   });
 
   afterAll(async () => {
@@ -238,6 +248,49 @@ describe.skipIf(!process.env.DATABASE_URL)('visit API (Tiger)', () => {
       const body = { message: 'hi', history: [], age_years: 8 };
       expect((await call('POST', '/visits/demo/companion', body)).status).toBe(400);
       expect((await call('POST', '/visits/00000000-0000-4000-8000-000000000000/companion', body)).status).toBe(404);
+    });
+  });
+
+  describe('staff sign-in (badge + PIN)', () => {
+    it('staff data is closed without signing in', async () => {
+      for (const url of ['/staff/queue', '/staff/visits/00000000-0000-4000-8000-000000000000']) {
+        const res = await call('GET', url, undefined, '');
+        expect(res.status, url).toBe(401);
+        expect(res.raw).not.toMatch(/first_name/);
+      }
+      expect((await call('POST', '/staff/visits/00000000-0000-4000-8000-000000000000/actions', { action: 'call_in' }, '')).status).toBe(401);
+    });
+
+    it('a wrong PIN or unknown badge is refused with the same message', async () => {
+      const wrongPin = await signIn('9001', '0000');
+      const unknown = await signIn('1111', '1234');
+      expect([wrongPin.status, unknown.status]).toEqual([401, 401]);
+      expect(wrongPin.body.error).toBe(unknown.body.error);
+      expect(wrongPin.cookie).toBe('');
+    });
+
+    it('the right badge + PIN signs in with an HTTP-only cookie and opens the dashboard', async () => {
+      const ok = await signIn('9002', '5678');
+      expect(ok.status).toBe(200);
+      expect(ok.body.staff).toEqual({ badge: '9002', name: 'Test Doctor' });
+      expect(String(ok.setCookie)).toMatch(/HttpOnly/);
+      expect(String(ok.setCookie)).toMatch(/SameSite=Strict/);
+      expect((await call('GET', '/staff/me', undefined, ok.cookie)).body.staff.name).toBe('Test Doctor');
+      expect((await call('GET', '/staff/queue', undefined, ok.cookie)).status).toBe(200);
+    });
+
+    it('a tampered cookie is rejected', async () => {
+      const { cookie } = await signIn('9001', '1234');
+      const [name, value] = cookie.split('=');
+      const [payload, sig] = decodeURIComponent(value!).split('.');
+      const forged = Buffer.from(JSON.stringify({ badge: '9001', name: 'Hacker', exp: Date.now() + 1e9 })).toString('base64url');
+      expect((await call('GET', '/staff/queue', undefined, `${name}=${forged}.${sig}`)).status).toBe(401);
+      expect((await call('GET', '/staff/queue', undefined, `${name}=${payload}.AAAA`)).status).toBe(401);
+    });
+
+    it('log out clears the cookie', async () => {
+      const res = await call('POST', '/staff/logout', undefined, staffCookie);
+      expect(String(res.setCookie)).toMatch(/Max-Age=0/);
     });
   });
 

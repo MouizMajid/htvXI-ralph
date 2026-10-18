@@ -56,6 +56,14 @@ The staff side uses **no AI**. Gemini is used for exactly three things:
 
 **Interpretation (per turn):** map the transcript to the node's options/slot; translate the child's words faithfully to English in `text_en` (keep the child's phrasing — "my tummy hurts really bad", not "severe abdominal pain"); return the JSON contract exactly.
 
+## Staff sign-in (badge + PIN)
+- `src/auth.ts`: accounts from `STAFF_ACCOUNTS` (`badge:pin:Name;…`), PINs compared as hashes in constant time, session = signed cookie `ralph_staff` (HMAC with `SESSION_SECRET`; `HttpOnly; SameSite=Strict; Path=/api`, `Secure` behind https; 12 h). No user table or session store on purpose; fails closed if unconfigured.
+- `routes/auth.ts`: `POST /staff/login {badge, pin}` → `{staff}` + cookie (same 401 message for wrong badge or PIN), `POST /staff/logout`, `GET /staff/me`.
+- `routes/staff.ts` has an `onRequest` hook: every staff data route returns 401 without a session. Nurse actions log `by: {badge, name}` in `nurse_actions`.
+- Web: `/staff/login` (`StaffLogin.tsx`), `RequireStaff` wraps `/staff` and `/staff/visit/:id`; Dashboard shows "Signed in as …" + Log out and bounces to sign-in on a 401.
+- Tests use test-only accounts/secret set in `vitest.setup.ts`; `api.test.ts` signs in once and sends the cookie with `/staff/*` calls.
+- Pitch: hospitals would plug in their own SSO + MFA; this is the demo-sized version of that pattern.
+
 ## Vercel deployment
 - Two Vercel projects from the same GitHub repo:
   - **`ralph-api`** — Root Directory `apps/api`. Framework auto-detected as Fastify from `src/index.ts` (which calls `listen`). All env vars from `.env.example` (except `PORT`) go in its Environment Variables.
