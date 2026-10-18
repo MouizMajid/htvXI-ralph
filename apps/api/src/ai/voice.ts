@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import type { Lang } from '@ralph/shared';
 import { env } from '../env.js';
-import { gemini } from './gemini.js';
+import { gemini, within } from './gemini.js';
 
 /** How Ralph sounds. Part of the cache key, so changing it regenerates clips. */
 export const RALPH_STYLE =
@@ -26,10 +26,6 @@ const TRANSCRIBE_LANGS: Record<Lang, string[]> = {
   fr: ['fr-FR'],
   'zh-CN': ['cmn-Hans-CN'],
 };
-
-function within<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
-  return Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${what} timed out`)), ms))]);
-}
 
 const voiceName = () => env.RALPH_VOICE || 'Achird';
 

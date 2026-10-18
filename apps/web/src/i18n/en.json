@@ -196,7 +196,12 @@
     "listening": "I'm listening… tap when you're done ({{seconds}})",
     "sending": "Thinking…",
     "heard": "I heard: “{{text}}”",
-    "tryTapping": "Hmm, can you tap the picture instead?",
+    "tryTapping": {
+      "body_map": "Hmm, can you tap where it hurts on the picture?",
+      "faces": "Hmm, can you tap the face that shows how you feel?",
+      "other": "Hmm, can you tap your answer instead?"
+    },
+    "notHeard": "I couldn't hear that. Can you try again, or tap?",
     "replay": "Hear it again"
   }
 }

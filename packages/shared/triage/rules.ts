@@ -1,6 +1,11 @@
-import type { Alert, Complaint, SlotMap } from '../types.js';
+import type { Alert, Complaint, Lang, SlotMap } from '../types.js';
 import type { Checkin, ParentAnswers } from '../schemas.js';
-import { findPhrase } from './text.js';
+import { findLoosePhrase, findPhrase } from './text.js';
+import replyEn from './i18n/en.json' with { type: 'json' };
+import replyHi from './i18n/hi.json' with { type: 'json' };
+import replyEs from './i18n/es.json' with { type: 'json' };
+import replyFr from './i18n/fr.json' with { type: 'json' };
+import replyZh from './i18n/zh-CN.json' with { type: 'json' };
 
 /*
  * Team-defined DEMO alert rules — NOT clinically validated.
@@ -38,7 +43,19 @@ export const BREATHING_PHRASES = [
  * messages, check-in notes). Each gives one heads-up, keyed so it's raised once per visit.
  */
 export const SAID_RED_FLAGS: readonly { key: string; reason: string; phrases: readonly string[] }[] = [
-  { key: 'chest_pain', reason: 'Says their chest hurts', phrases: ['chest hurts', 'my chest hurts', 'chest pain'] },
+  {
+    key: 'chest_pain',
+    reason: 'Says their chest hurts',
+    phrases: ['chest hurts', 'chest hurting', 'chest pain', 'chest is tight', 'chest feels tight'],
+  },
+  {
+    key: 'blood',
+    reason: 'Mentions blood',
+    phrases: [
+      'threw up blood', 'throwing up blood', 'throw up blood', 'vomited blood', 'coughed up blood', 'coughing blood',
+      'blood in my poop', 'blood in my pee', 'pooped blood', 'peed blood', 'bleeding',
+    ],
+  },
   {
     key: 'very_sleepy',
     reason: 'Says they are very sleepy',
@@ -49,10 +66,46 @@ export const SAID_RED_FLAGS: readonly { key: string; reason: string; phrases: re
     reason: 'Says they feel faint or dizzy',
     phrases: ['going to faint', 'gonna faint', 'room is spinning', 'everything is spinning', 'really dizzy'],
   },
+  { key: 'fainted', reason: 'Says they passed out or fainted', phrases: ['passed out', 'fainted', 'blacked out'] },
+  {
+    key: 'swelling',
+    reason: 'Says their throat, lips or face feel swollen or tight',
+    phrases: ['throat is closing', 'throat feels tight', 'lips are swelling', 'face is swelling', 'tongue is swelling', "can't swallow", 'cant swallow'],
+  },
+  { key: 'head_injury', reason: 'Says they hit their head', phrases: ['hit my head', 'bumped my head', 'fell on my head'] },
+  {
+    key: 'swallowed',
+    reason: 'Says they swallowed something',
+    phrases: ['swallowed a battery', 'swallowed a magnet', 'swallowed a coin', 'swallowed medicine', 'swallowed pills'],
+  },
   { key: 'vomiting_again', reason: 'Says they threw up again', phrases: ['threw up again', 'throwing up', 'just threw up'] },
-  { key: 'severe_pain', reason: 'Says the pain is very bad', phrases: ['hurts so much', 'worst pain', 'hurts really really bad'] },
+  {
+    key: 'severe_pain',
+    reason: 'Says the pain is very bad',
+    phrases: ['hurts so much', 'worst pain', 'hurts really really bad', 'really really hurts'],
+  },
   { key: 'vision', reason: 'Says they have trouble seeing', phrases: ["can't see", 'cant see', 'seeing double'] },
 ];
+
+/** Ralph's fixed reply when a chat message sounds like a red flag (pre-translated, never LLM-written). */
+export const RED_FLAG_REPLY: Record<Lang, string> = {
+  en: replyEn.red_flag_reply,
+  hi: replyHi.red_flag_reply,
+  es: replyEs.red_flag_reply,
+  fr: replyFr.red_flag_reply,
+  'zh-CN': replyZh.red_flag_reply,
+};
+
+/** Does this one English message say something on the red-flag lists? Returns the alert reason. */
+export function worryingWords(textEn: string): string | null {
+  const breathing = findLoosePhrase(textEn, BREATHING_PHRASES, 'en');
+  if (breathing) return `Said "${breathing}"`;
+  for (const flag of SAID_RED_FLAGS) {
+    const said = findLoosePhrase(textEn, flag.phrases, 'en');
+    if (said) return `${flag.reason} ("${said}")`;
+  }
+  return null;
+}
 
 export interface AlertInput {
   age_years: number;
@@ -75,10 +128,10 @@ function redFlags({ age_years, complaint, slots, parent, checkins, child_texts_e
 
   if (complaint === 'breathing') red('breathing_complaint', 'Came in for trouble breathing');
   if (slots.hard_to_breathe === 'yes') red('hard_to_breathe', "Says it's hard to breathe right now");
-  const breathingWords = child_texts_en.map((t) => findPhrase(t, BREATHING_PHRASES, 'en')).find(Boolean);
+  const breathingWords = child_texts_en.map((t) => findLoosePhrase(t, BREATHING_PHRASES, 'en')).find(Boolean);
   if (breathingWords) red('breathing_words', `Said "${breathingWords}"`);
   for (const flag of SAID_RED_FLAGS) {
-    const said = child_texts_en.map((t) => findPhrase(t, flag.phrases, 'en')).find(Boolean);
+    const said = child_texts_en.map((t) => findLoosePhrase(t, flag.phrases, 'en')).find(Boolean);
     if (said) red(`said:${flag.key}`, `${flag.reason} ("${said}")`);
   }
 

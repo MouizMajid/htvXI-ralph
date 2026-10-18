@@ -1,1 +1,4 @@
-{ "safeguarding_reply": "谢谢你告诉我。护士会来和你说话。" }
+{
+  "safeguarding_reply": "谢谢你告诉我。护士会来和你说话。",
+  "red_flag_reply": "谢谢你告诉我。我现在就告诉护士。"
+}

@@ -1,1 +1,4 @@
-{ "safeguarding_reply": "Merci de me l'avoir dit. Une infirmière va venir te parler." }
+{
+  "safeguarding_reply": "Merci de me l'avoir dit. Une infirmière va venir te parler.",
+  "red_flag_reply": "Merci de me l'avoir dit. Je préviens l'infirmière tout de suite."
+}

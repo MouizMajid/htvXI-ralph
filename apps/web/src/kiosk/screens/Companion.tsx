@@ -65,7 +65,10 @@ export function Companion({
     (line: string, goQuietAfter = false) => {
       cancelTtsRef.current?.();
       setMode('ralph_speaking');
-      cancelTtsRef.current = speak(line, language, () => setMode(goQuietAfter ? 'quiet' : 'awaiting_child'));
+      // live: chat lines are made up on the spot; speech.ts keeps the whole chat in one voice.
+      cancelTtsRef.current = speak(line, language, () => setMode(goQuietAfter ? 'quiet' : 'awaiting_child'), {
+        live: true,
+      });
     },
     [language],
   );
@@ -107,6 +110,8 @@ export function Companion({
         language,
       });
 
+      // The server always sends a reply (Gemini's, a fixed one, or its offline one); this local
+      // fallback is only for when the request itself fails.
       const fb = fallbackReply(text, turnIdxRef.current++);
       const reply = res?.reply ?? fb.reply;
       setTurns((prev) => [...prev, { speaker: 'ralph', text: reply }]);

@@ -11,6 +11,9 @@ import { speak } from '../../lib/speech';
 const REPLY_MIN_MS = 900;
 const REPLY_MAX_MS = 9000;
 
+/** Which "can you tap instead?" line fits the question (keys under talk.tryTapping). */
+const TAP_HINT: Partial<Record<NodeView['answer_type'], string>> = { body_map: 'body_map', faces: 'faces' };
+
 interface Props {
   node: NodeView;
   lang: Lang;
@@ -36,10 +39,12 @@ export function Question({ node, lang, reply, line, heard, onReplyDone, onAnswer
     reply === 'safeguarding_reply'
       ? SAFEGUARDING_REPLY[lang]
       : reply === 'try_tapping'
-        ? t('talk.tryTapping')
-        : reply === 'thanks'
-          ? (line ?? t('ralph.thanks'))
-          : null;
+        ? t(`talk.tryTapping.${TAP_HINT[node.answer_type] ?? 'other'}`)
+        : reply === 'not_heard'
+          ? t('talk.notHeard')
+          : reply === 'thanks'
+            ? (line ?? t('ralph.thanks'))
+            : null;
 
   // Ralph says his reaction, then we move on once he's done (min/max bounds keep the pace sane).
   const doneRef = useRef(onReplyDone);
@@ -74,7 +79,7 @@ export function Question({ node, lang, reply, line, heard, onReplyDone, onAnswer
     const showHeard = heard && reply !== 'safeguarding_reply';
     return (
       <Shell
-        pose={reply === 'safeguarding_reply' ? 'gentle' : reply === 'try_tapping' ? 'think' : 'happy'}
+        pose={reply === 'safeguarding_reply' ? 'gentle' : reply === 'try_tapping' || reply === 'not_heard' ? 'think' : 'happy'}
         line={replyText}
         subline={showHeard ? t('talk.heard', { text: heard }) : undefined}
       />

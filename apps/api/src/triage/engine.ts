@@ -7,6 +7,7 @@ import {
   getNode,
   nextNodeId,
   normalizeAnswer,
+  quickAnswer,
   safeguardingAlert,
   treeForComplaint,
   type Complaint,
@@ -20,6 +21,7 @@ import {
 import * as db from '../db/visits.js';
 import { HttpError, notFound } from '../http.js';
 import { interpretTurn } from '../ai/interpret.js';
+import { env } from '../env.js';
 
 export function nodeView(tree: Tree, id: string | null): NodeView | null {
   if (!id) return null;
@@ -111,9 +113,13 @@ export async function answer(visitId: string, a: AnswerInput): Promise<{ next: N
 export const MIN_VOICE_CONFIDENCE = 0.6;
 
 /**
- * A spoken answer: Gemini reads the transcript, code validates the value (normalizeAnswer).
+ * A spoken answer. Plain English answers ("my belly button", "yeah", "twice") are read by code
+ * (quickAnswer) — instant, and they work when Gemini is down. Anything else goes to Gemini.
+ * Either way code validates the value (normalizeAnswer).
  * Accepted → saved exactly like a tap (input 'voice', with the child's words + English).
  * Not accepted → the words are kept for the nurse, alerts still run, and the child taps instead.
+ * Ralph's own reaction line is only used when his voice can be generated live (TTS_ON_DEMAND);
+ * otherwise he says the fixed, pre-generated "Thank you!" so his voice never switches mid-visit.
  */
 export async function answerSpoken(
   visitId: string,
@@ -127,14 +133,17 @@ export async function answerSpoken(
   const node = getNode(tree, s.node_id);
   const transcript = s.transcript?.trim() || null;
   const sameQuestion = nodeView(tree, s.node_id);
-  if (!transcript) return { heard: null, accepted: false, value: null, next: sameQuestion, reply: 'try_tapping', line: null };
+  if (!transcript) return { heard: null, accepted: false, value: null, next: sameQuestion, reply: 'not_heard', line: null };
 
-  const it = await interpretTurn({ node, age: visit.age_years, lang: visit.language, transcript });
-  const textEn = visit.language === 'en' ? transcript : (it?.text_en ?? null);
   const freeSpeech = node.answer_type === 'free_speech';
-  const value = normalizeAnswer(node, freeSpeech ? transcript : it?.slot_value);
+  const quick = freeSpeech ? null : normalizeAnswer(node, quickAnswer(node, transcript, visit.language));
+  // Free speech still goes to Gemini (translation + its safeguarding signal); quick answers don't need it.
+  const it = quick !== null ? null : await interpretTurn({ node, age: visit.age_years, lang: visit.language, transcript });
+  const textEn = visit.language === 'en' ? transcript : (it?.text_en ?? null);
+  const value = quick ?? normalizeAnswer(node, freeSpeech ? transcript : it?.slot_value);
   const accepted =
-    value !== null && (freeSpeech || (it !== null && !it.needs_clarification && it.confidence >= MIN_VOICE_CONFIDENCE));
+    value !== null &&
+    (freeSpeech || quick !== null || (it !== null && !it.needs_clarification && it.confidence >= MIN_VOICE_CONFIDENCE));
 
   if (accepted) {
     const res = await answer(visitId, {
@@ -152,7 +161,7 @@ export async function answerSpoken(
       value,
       next: res.next,
       reply: res.reply,
-      line: res.reply === 'thanks' ? (it?.ralph_reply ?? null) : null,
+      line: res.reply === 'thanks' && env.TTS_ON_DEMAND ? (it?.ralph_reply ?? null) : null,
     };
   }
 

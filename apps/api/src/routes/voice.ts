@@ -45,7 +45,8 @@ export const voiceRoutes: FastifyPluginAsync = async (app) => {
     const hash = ttsHash(text);
     const url = `/api/tts/${hash}`;
     if (await hasTts(hash)) return { url, cached: true };
-    if (!env.TTS_ON_DEMAND) return reply.code(404).send({ error: 'not pre-generated; use the browser voice' });
+    // on_demand:false tells the kiosk no live lines will come, so a chat can stay in one voice.
+    if (!env.TTS_ON_DEMAND) return reply.code(404).send({ error: 'not pre-generated; use the browser voice', on_demand: false });
     if (!ttsAvailable()) return reply.code(503).send({ error: 'Ralph’s voice is not configured' });
     const audio = await synthesize(text);
     if (!audio) return reply.code(503).send({ error: 'Ralph’s voice is unavailable right now' });

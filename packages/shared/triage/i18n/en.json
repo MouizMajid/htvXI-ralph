@@ -1,1 +1,4 @@
-{ "safeguarding_reply": "Thank you for telling me. A nurse will come talk with you." }
+{
+  "safeguarding_reply": "Thank you for telling me. A nurse will come talk with you.",
+  "red_flag_reply": "Thank you for telling me. I am letting the nurse know right now."
+}

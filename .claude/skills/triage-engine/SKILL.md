@@ -7,9 +7,10 @@ description: RALPH conversation + alert logic — question tree JSON format, per
 
 ## Code map (`packages/shared`, all exported from `@ralph/shared`)
 - `triage/trees.ts` — `TREES` (`tummy`, `general`), `treeForComplaint()` (Tier 1: fever/breathing/other → `general`), `getNode()`, `nextNodeId()`, `normalizeAnswer(node, value)` (validates taps + interpreted voice; returns null if invalid; clamps "N or more").
-- `triage/rules.ts` — `evaluateAlerts(AlertInput)` → `Alert[]` (red flags, getting worse, not responding); thresholds in `RULES`; `BREATHING_PHRASES`.
+- `triage/rules.ts` — `evaluateAlerts(AlertInput)` → `Alert[]` (red flags, getting worse, not responding); thresholds in `RULES`; `BREATHING_PHRASES`, `SAID_RED_FLAGS` (chest, blood, fainted, swelling, head injury, swallowed…); `worryingWords(textEn)` checks one chat message; `RED_FLAG_REPLY` (fixed, pre-translated chat reply).
+- `triage/quick.ts` — `quickAnswer(node, transcript, lang)`: plain English answers ("belly button", "yeah", "a lot", "twice") mapped by code before Gemini is asked. Conservative: vague ("my tummy"), mixed, or negated → null.
 - `triage/safeguarding.ts` — `detectSafeguarding()` (phrase lists OR LLM), `safeguardingAlert()`.
-- `triage/text.ts` — `normalizeText()`, `findPhrase()` (whole words; substrings for zh-CN).
+- `triage/text.ts` — `normalizeText()`, `findPhrase()` (whole words; substrings for zh-CN), `findLoosePhrase()` (allows up to 2 filler words — "chest *really* hurts" — but a negation nearby blocks it). Red-flag lists use the loose match.
 - `schemas.ts` — `ParentAnswersSchema`, `CheckinSchema`, `InterpretationSchema` (with `text_en`), `CreateVisitBodySchema`; `types.ts` — `COMPLAINTS`, `BODY_REGIONS`, `YES_NO`, `Alert`.
 - `triage/fixtures/maya.ts` — the demo scenario; reuse it in API tests and the seed.
 - **Alert `key`s are stable** (`red:no_pee`, `det:pain_up:4`, `unresp:2`, `safeguarding:<phrase>`): the API re-runs `evaluateAlerts` after every change and inserts only keys the visit doesn't already have.
@@ -46,8 +47,9 @@ Golden rule: **code decides alerts, the LLM only interprets and translates.** Ev
 English source text lives in the tree; translations are pre-generated into `packages/shared/triage/i18n/{lang}.json`.
 
 ## Per-turn AI call (interpretation, not decision)
+Spoken answers try `quickAnswer` first (English only); only what it can't read goes to Gemini. Free-speech answers always go to Gemini (translation + its safeguarding signal).
 Input to Gemini: node definition, child age, language, last few turns, raw transcript.
-Output JSON (Zod-validated; retry once, then fall back to tap options):
+Output JSON (Zod-validated; retried once on bad JSON, all within an 8 s budget; API errors fall back at once to tap options):
 ```ts
 {
   slot_value: string | number | null,   // mapped to node's options when applicable
@@ -72,6 +74,7 @@ No suggested level, no numeric score. Each alert is `{ kind, reason }` with a pl
 - Worst pain face (5)
 - Fever in a very young child (age threshold set by team)
 - Rash + fever together
+- Worrying words anywhere the child speaks or types (tree answers, chat, check-in notes): chest pain, blood, fainting, throat/lips swelling, hit their head, swallowed something, etc. In chat, Ralph answers these with the fixed `red_flag_reply` ("I'm letting the nurse know right now") and offers the tap check-in — never chit-chat.
 
 **Getting worse** (`kind: 'deterioration'`) — from check-ins:
 - Pain face up ≥ 2 from first report → "Pain went from 2 → 4"

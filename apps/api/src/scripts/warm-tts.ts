@@ -3,26 +3,40 @@
 // The kiosk asks for exactly these strings, so the cache keys match.
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { SAFEGUARDING_REPLY, TREES } from '@ralph/shared';
+import { RED_FLAG_REPLY, SAFEGUARDING_REPLY, TREES } from '@ralph/shared';
 import { synthesize, ttsAvailable, ttsHash } from '../ai/voice.js';
 import { requireDb } from '../db/client.js';
 import { hasTts, putTts } from '../db/tts.js';
 
 const enPath = fileURLToPath(new URL('../../../web/src/i18n/en.json', import.meta.url));
-const en = JSON.parse(await readFile(enPath, 'utf8')) as Record<string, Record<string, string>>;
+const en = JSON.parse(await readFile(enPath, 'utf8')) as Record<string, any>;
 
-/** Fixed kiosk lines Ralph says (no {{placeholders}} — those can't be pre-generated). */
+/**
+ * Fixed kiosk lines Ralph says (no {{placeholders}} — those can't be pre-generated), in the
+ * order a demo hears them: the free tier allows ~10 clips a day, so the first ones matter most.
+ * Chat replies aren't here: they're made up live (browser voice unless TTS_ON_DEMAND).
+ */
 const FIXED_LINES = [
-  en.complaint?.ask,
-  en.ralph?.thanks,
-  en.talk?.tryTapping,
-  en.checkin?.ask,
-  en.companion?.didntCatch,
-  ...Object.values(SAFEGUARDING_REPLY),
+  en.welcome.greeting,
+  en.complaint.ask,
+  en.ralph.thanks,
+  ...Object.values(TREES.tummy!.nodes).map((n) => n.ask),
+  en.talk.tryTapping.body_map,
+  en.talk.notHeard,
+  en.checkin.ask,
+  en.checkin.face,
+  en.talk.tryTapping.faces,
+  en.talk.tryTapping.other,
+  SAFEGUARDING_REPLY.en,
   ...Object.values(TREES).flatMap((tree) => Object.values(tree.nodes).map((n) => n.ask)),
-].filter((l): l is string => Boolean(l) && !l!.includes('{{'));
+  ...Object.values(SAFEGUARDING_REPLY),
+  ...Object.values(RED_FLAG_REPLY),
+].filter((l): l is string => typeof l === 'string' && !l.includes('{{'));
 
 const lines = [...new Set(FIXED_LINES)];
+
+const PACE_MS = 21_000;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 if (!ttsAvailable()) {
   console.error('Gemini TTS is not configured (GEMINI_API_KEY / GEMINI_TTS_MODEL).');
@@ -40,7 +54,13 @@ for (const [i, text] of lines.entries()) {
     console.log(`${label}  (cached)`);
     continue;
   }
-  const audio = await synthesize(text);
+  // Free tier: 3 TTS requests a minute, so pace them (and retry once after a pause).
+  let audio = await synthesize(text);
+  if (!audio) {
+    await sleep(PACE_MS);
+    audio = await synthesize(text);
+  }
+  if (lines.slice(i + 1).length) await sleep(PACE_MS);
   if (!audio) {
     failed++;
     console.log(`${label}  FAILED (will use the browser voice)`);

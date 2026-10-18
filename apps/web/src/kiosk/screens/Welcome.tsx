@@ -1,6 +1,8 @@
+import { useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Ralph } from '../components/Ralph';
+import { speak, useSpeaking } from '../../lib/speech';
 
 export function Welcome({
   onStart,
@@ -9,7 +11,27 @@ export function Welcome({
   onStart: () => void;
   onSkipToWaiting?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const speaking = useSpeaking();
+  const greeting = t('welcome.greeting');
+  const sayHello = useCallback(() => speak(greeting, i18n.language, () => {}), [greeting, i18n.language]);
+
+  // Ralph says hello when this screen appears. Browsers don't allow sound before the first touch
+  // on a freshly loaded page, so then he says it on that first touch (unless it's "Let's go").
+  useEffect(() => {
+    if (navigator.userActivation?.hasBeenActive ?? true) return sayHello();
+    let cancel: (() => void) | undefined;
+    const onFirstTouch = (e: PointerEvent) => {
+      window.removeEventListener('pointerdown', onFirstTouch);
+      if (!(e.target as Element).closest('[data-start]')) cancel = sayHello();
+    };
+    window.addEventListener('pointerdown', onFirstTouch);
+    return () => {
+      window.removeEventListener('pointerdown', onFirstTouch);
+      cancel?.();
+    };
+  }, [sayHello]);
+
   return (
     <section className="relative mx-auto flex min-h-full max-w-2xl flex-col items-center justify-center gap-7 overflow-hidden p-6 text-center">
       {/* Soft decorative background sparkles */}
@@ -35,7 +57,9 @@ export function Welcome({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 220, damping: 18 }}
       >
-        <Ralph pose="wave" className="size-72 sm:size-84" />
+        <button type="button" onClick={sayHello} aria-label={t('talk.replay')}>
+          <Ralph pose={speaking ? 'talk' : 'wave'} className="size-72 sm:size-84" />
+        </button>
       </motion.div>
 
       {/* Speech Bubble Card */}
@@ -55,6 +79,7 @@ export function Welcome({
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStart}
+          data-start
           className="min-h-18 rounded-pill bg-primary px-14 text-2xl font-extrabold text-on-primary shadow-soft"
         >
           {t('welcome.start')} ✨

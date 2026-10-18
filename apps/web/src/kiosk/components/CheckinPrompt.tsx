@@ -41,8 +41,9 @@ export function CheckinPrompt({ visitId, lang, onDone }: Props) {
     onDone();
   };
 
-  // Ralph asks out loud once.
-  useEffect(() => speak(t('checkin.ask'), lang, () => {}), [lang, t]);
+  // Ralph asks each step out loud once.
+  const asking = feeling === null ? t('checkin.ask') : t('checkin.face');
+  useEffect(() => speak(asking, lang, () => {}), [asking, lang]);
 
   // No answer in time → record it, so a child who stops responding gets noticed.
   useEffect(() => {
