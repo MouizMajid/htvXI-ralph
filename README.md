@@ -15,7 +15,13 @@ pnpm dev                  # api :3001 + web :5173
 ```
 
 - Kiosk: http://localhost:5173/kiosk
-- Staff dashboard: http://localhost:5173/staff
+- Staff dashboard: http://localhost:5173/staff (sign in with a badge number + PIN)
+
+### Staff sign-in (demo)
+The dashboard needs a badge number and PIN, checked on the server; a signed, HTTP-only cookie lasts one 12-hour shift.
+Demo accounts (synthetic): **badge 1042 / PIN 4821** (Nurse Sam Lee) and **badge 2077 / PIN 3156** (Dr. Ana Ortiz).
+Add `?demo=1` to the sign-in page to show them on screen. Accounts come from `STAFF_ACCOUNTS` and cookies are signed with `SESSION_SECRET` (see `.env.example`).
+In a hospital deployment this is replaced by the hospital's own sign-in (SSO with multi-factor authentication).
 - To test on a phone/iPad on the same Wi-Fi, use the "Network" URL Vite prints (mic needs HTTPS outside localhost — use the deployed site for voice).
 
 Other scripts: `pnpm test`, `pnpm typecheck`, `pnpm build`.

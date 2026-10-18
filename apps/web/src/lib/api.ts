@@ -6,6 +6,7 @@ import type {
   ParentAnswers,
   ReplyKey,
   StaffQueueItem,
+  StaffSession,
   StaffVisitDetail,
 } from '@ralph/shared';
 
@@ -64,6 +65,9 @@ export const kioskApi = {
 export type StaffAction = { action: 'call_in' } | { action: 'done' } | { action: 'acknowledge_flag'; flag_id: number };
 
 export const staffApi = {
+  login: (badge: string, pin: string) => post<{ staff: StaffSession }>('/staff/login', { badge, pin }),
+  logout: () => post<{ ok: true }>('/staff/logout', {}),
+  me: () => api<{ staff: StaffSession }>('/staff/me'),
   queue: () => api<{ visits: StaffQueueItem[] }>('/staff/queue'),
   visit: (id: string) => api<StaffVisitDetail>(`/staff/visits/${id}`),
   action: (id: string, body: StaffAction) => post<{ ok: true }>(`/staff/visits/${id}/actions`, body),

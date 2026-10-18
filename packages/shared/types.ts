@@ -65,6 +65,12 @@ export interface NodeView {
 /** Which fixed line Ralph says after an answer; the kiosk maps it to translated text + audio. */
 export type ReplyKey = 'thanks' | 'safeguarding_reply';
 
+/** Who is signed in to the staff dashboard (badge + PIN sign-in). */
+export interface StaffSession {
+  badge: string;
+  name: string;
+}
+
 // ---------- Staff dashboard responses (GET /api/staff/queue, /api/staff/visits/:id) ----------
 
 export interface StaffQueueAlert {

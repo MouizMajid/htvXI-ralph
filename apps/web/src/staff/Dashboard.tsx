@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StaffQueueItem } from '@ralph/shared';
 import i18n from '../i18n';
-import { staffApi, type StaffAction } from '../lib/api';
+import { ApiError, staffApi, type StaffAction } from '../lib/api';
 import { LIVE_POLL_MS } from './live';
 import {
   ALERT_KIND,
@@ -76,11 +76,29 @@ export function Dashboard() {
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
 
+  const queryClient = useQueryClient();
+  const me = useQuery({ queryKey: ['staff-me'], queryFn: staffApi.me, retry: false, staleTime: 60_000 });
   const queueQuery = useQuery({
     queryKey: ['staff-queue'],
     queryFn: staffApi.queue,
     refetchInterval: LIVE_POLL_MS,
   });
+
+  // Session ran out mid-shift → re-check who's signed in (RequireStaff then sends them to sign in).
+  useEffect(() => {
+    if (queueQuery.error instanceof ApiError && queueQuery.error.status === 401) {
+      void queryClient.invalidateQueries({ queryKey: ['staff-me'] });
+    }
+  }, [queueQuery.error, queryClient]);
+
+  const logOut = async () => {
+    try {
+      await staffApi.logout();
+    } finally {
+      queryClient.clear();
+      navigate('/staff/login', { replace: true });
+    }
+  };
   const queue = queueQuery.data?.visits;
   const freshAlerts = useNewAlerts(queue);
 
@@ -116,15 +134,31 @@ export function Dashboard() {
           <h1 className="text-2xl font-bold">Waiting Room</h1>
           <p className="text-sm text-ink-muted">Children with open alerts first, then by arrival. The nurse triages.</p>
         </div>
-        <p className="text-xs text-ink-muted" aria-live="polite">
-          {queueQuery.isError
+        <div className="flex flex-col items-end gap-1">
+          {me.data && (
+            <p className="flex items-center gap-2 text-sm">
+              <span>
+                Signed in as <strong>{me.data.staff.name}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => void logOut()}
+                className="rounded-md border border-staff-line px-2 py-0.5 text-xs font-semibold hover:bg-surface"
+              >
+                Log out
+              </button>
+            </p>
+          )}
+          <p className="text-xs text-ink-muted" aria-live="polite">
+            {queueQuery.isError
             ? 'Can’t reach the server — showing the last update'
             : secs === null
               ? 'Loading…'
               : secs < 5
                 ? 'Updated just now'
                 : `Updated ${secs}s ago`}
-        </p>
+          </p>
+        </div>
       </header>
 
       <div className="mt-5 grid grid-cols-1 items-start gap-4 lg:grid-cols-[380px_minmax(0,1fr)]">

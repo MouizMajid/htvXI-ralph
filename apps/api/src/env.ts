@@ -14,6 +14,10 @@ const EnvSchema = z.object({
     .string()
     .default('true')
     .transform((v) => v === 'true'),
+  /** Staff sign-in accounts: `badge:pin:Display Name` entries separated by `;`. Synthetic people only. */
+  STAFF_ACCOUNTS: z.string().default(''),
+  /** Signs staff session cookies. Long random string; changing it signs everyone out. */
+  SESSION_SECRET: z.string().default(''),
   SUPPORTED_LANGS: z
     .string()
     .default('en,hi,es,fr,zh-CN')

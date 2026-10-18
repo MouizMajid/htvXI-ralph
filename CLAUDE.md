@@ -29,6 +29,7 @@ TypeScript everywhere, pnpm workspaces monorepo.
 - **API:** Node 22 + Fastify, Zod, `@google/genai` (Gemini on the child side only: Transcribe STT, per-turn interpretation + English translation, Ralph's TTS; browser `speechSynthesis` fallback).
 - **DB:** Tiger Data (Tiger Cloud free) — Postgres + TimescaleDB, `postgres` (porsager) client, plain SQL migrations.
 - **Deploy: Vercel**, two projects from this repo. `ralph-web` (Root Directory `apps/web`, Vite) and `ralph-api` (Root Directory `apps/api`, Fastify zero-config — Vercel detects `src/index.ts` and runs it as one Function). `apps/web/vercel.json` rewrites `/api/*` → the API project, so the browser sees one origin. HTTPS is automatic (needed for mic). Custom domain from GoDaddy Registry points at `ralph-web`.
+- **Staff sign-in:** badge + PIN checked on the server, signed HTTP-only cookie (`apps/api/src/auth.ts`). Every `/api/staff/*` data route requires it; kiosk routes stay open. Real hospitals: their SSO + MFA (pitch only).
 - **Serverless constraints:** no WebSockets — staff dashboard and kiosk **poll** with TanStack Query (`LIVE_POLL_MS` in `apps/web/src/staff/live.ts`). No persistent disk — anything stored goes in Postgres (e.g. `tts_cache`). No in-memory state or timers between requests. Request body ≤ 4.5 MB.
 - **Tests:** Vitest.
 - **Gemini model IDs change often — never hard-code; read from env and verify against https://ai.google.dev/gemini-api/docs/models.**
